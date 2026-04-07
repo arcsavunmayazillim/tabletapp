@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "com.takipsanplus.rfidtablet.app-debug-60:/drawable_splash_takipsan_logo.xml.flat",
+        "source": "com.takipsanplus.rfidtablet.app-main-62:/drawable/splash_takipsan_logo.xml"
+    },
+    {
+        "merged": "com.takipsanplus.rfidtablet.app-debug-60:/xml_network_security_config.xml.flat",
+        "source": "com.takipsanplus.rfidtablet.app-main-62:/xml/network_security_config.xml"
+    },
+    {
+        "merged": "com.takipsanplus.rfidtablet.app-debug-60:/drawable_takipsan_logo_w.xml.flat",
+        "source": "com.takipsanplus.rfidtablet.app-main-62:/drawable/takipsan_logo_w.xml"
+    },
+    {
+        "merged": "com.takipsanplus.rfidtablet.app-debug-60:/drawable_ulogslogo.png.flat",
+        "source": "com.takipsanplus.rfidtablet.app-main-62:/drawable/ulogslogo.png"
+    }
+]
