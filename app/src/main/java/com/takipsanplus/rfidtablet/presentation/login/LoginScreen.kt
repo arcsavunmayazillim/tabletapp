@@ -14,12 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -45,14 +42,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -172,7 +167,12 @@ private fun TabletLayout(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .fillMaxHeight()
-                    .fillMaxWidth(0.75f),
+                    .fillMaxWidth(0.75f)
+                    .graphicsLayer {
+                        rotationZ = -20f
+                        scaleX = 1.35f
+                        scaleY = 1.35f
+                    },
                 contentScale = ContentScale.Crop,
                 alpha = 0.55f
             )
@@ -215,15 +215,19 @@ private fun PhoneLayout(
     onLanguageChanged: (AppLanguage) -> Unit,
     onLoginClick: () -> Unit
 ) {
-    BoxWithConstraints(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(LoginBg)
     ) {
-        val logoTopPadding = (maxHeight * 0.15f).coerceIn(64.dp, 120.dp)
-        val logoHeight = (maxWidth * 0.22f).coerceIn(78.dp, 110.dp)
-        val logoToFormGap = (maxHeight * 0.02f).coerceIn(10.dp, 18.dp)
-        val horizontalPadding = (maxWidth * 0.055f).coerceIn(18.dp, 28.dp)
+        val configuration = LocalConfiguration.current
+        val screenHeight = configuration.screenHeightDp.dp
+        val screenWidth = configuration.screenWidthDp.dp
+
+        val logoTopPadding = remember(screenHeight) { (screenHeight * 0.15f).coerceIn(64.dp, 120.dp) }
+        val logoHeight = remember(screenWidth) { (screenWidth * 0.22f).coerceIn(78.dp, 110.dp) }
+        val logoToFormGap = remember(screenHeight) { (screenHeight * 0.02f).coerceIn(10.dp, 18.dp) }
+        val horizontalPadding = remember(screenWidth) { (screenWidth * 0.055f).coerceIn(18.dp, 28.dp) }
 
         Image(
             painter = painterResource(id = R.drawable.bg_pat4),
@@ -283,9 +287,9 @@ private fun LoginForm(
     onRememberMeChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onLoginClick: () -> Unit,
+    modifier: Modifier = Modifier,
     compact: Boolean = false,
-    showLogo: Boolean = true,
-    modifier: Modifier = Modifier
+    showLogo: Boolean = true
 ) {
     Column(
         modifier = modifier,
