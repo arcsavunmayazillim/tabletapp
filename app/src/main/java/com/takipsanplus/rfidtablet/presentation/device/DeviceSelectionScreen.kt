@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -31,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -80,23 +80,13 @@ fun DeviceSelectionScreen(
         Image(
             painter = painterResource(id = R.drawable.bg_pat3),
             contentDescription = null,
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .fillMaxHeight()
-                .fillMaxWidth(if (isWide) 0.35f else 0.45f),
-            contentScale = ContentScale.FillBounds,
-            alpha = 0.6f
-        )
-
-        Image(
-            painter = painterResource(id = R.drawable.bg_pat2),
-            contentDescription = null,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .fillMaxWidth(if (isWide) 0.35f else 0.45f),
-            contentScale = ContentScale.FillBounds,
-            alpha = 0.6f
+            modifier = Modifier.fillMaxSize(),
+            alignment = BiasAlignment(
+                horizontalBias = if (isWide) -0.8f else -0.5f, 
+                verticalBias = 0f
+            ),
+            contentScale = ContentScale.Crop,
+            alpha = if (isWide) 0.45f else 0.6f
         )
 
         Box(
@@ -187,7 +177,6 @@ fun DeviceSelectionScreen(
                                 disabledLabelColor = Color(0xFF49454F),
                             )
                         )
-                        // Transparent tap area over the disabled field
                         Box(
                             modifier = Modifier
                                 .matchParentSize()
