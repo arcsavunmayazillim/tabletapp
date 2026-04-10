@@ -302,6 +302,7 @@ fun ShipmentScreen(
                     canFindPackage = canFindPackage,
                     isFindPackageLookupActive = uiState.isFindPackageLookupActive,
                     onFindPackageByTag = onFindPackageByTag,
+                    showActionIcons = true,
                     modifier = Modifier
                         .weight(0.36f)
                         .fillMaxHeight()
@@ -738,6 +739,7 @@ private fun ShipmentListPane(
     isFindPackageLookupActive: Boolean,
     onFindPackageByTag: () -> Unit,
     showScanRow: Boolean = true,
+    showActionIcons: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -811,7 +813,7 @@ private fun ShipmentListPane(
                     Button(
                         onClick = onNew,
                         modifier = Modifier
-                            .weight(1f)
+                            .then(if (showActionIcons) Modifier.weight(1f) else Modifier.fillMaxWidth())
                             .height(54.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
@@ -826,38 +828,40 @@ private fun ShipmentListPane(
                         )
                     }
 
-                    val iconButtonModifier = Modifier
-                        .size(54.dp)
-                        .clip(RoundedCornerShape(14.dp))
+                    if (showActionIcons) {
+                        val iconButtonModifier = Modifier
+                            .size(54.dp)
+                            .clip(RoundedCornerShape(14.dp))
 
-                    val isSelected = selectedId != null
+                        val isSelected = selectedId != null
 
-                    IconButton(
-                        onClick = onEditShipment,
-                        enabled = isSelected,
-                        modifier = iconButtonModifier
-                            .background(if (isSelected) Color(0xFFF97316) else ExecutiveMuted.copy(alpha = 0.15f))
-                    ) {
-                        Icon(
-                            Icons.Filled.Edit,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
+                        IconButton(
+                            onClick = onEditShipment,
+                            enabled = isSelected,
+                            modifier = iconButtonModifier
+                                .background(if (isSelected) Color(0xFFF97316) else ExecutiveMuted.copy(alpha = 0.15f))
+                        ) {
+                            Icon(
+                                Icons.Filled.Edit,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
 
-                    IconButton(
-                        onClick = onCloseConsignment,
-                        enabled = isSelected && canCloseConsignment,
-                        modifier = iconButtonModifier
-                            .background(if (isSelected && canCloseConsignment) Color(0xFFDC2626) else ExecutiveMuted.copy(alpha = 0.15f))
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        IconButton(
+                            onClick = onCloseConsignment,
+                            enabled = isSelected && canCloseConsignment,
+                            modifier = iconButtonModifier
+                                .background(if (isSelected && canCloseConsignment) Color(0xFFDC2626) else ExecutiveMuted.copy(alpha = 0.15f))
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                 }
                 
