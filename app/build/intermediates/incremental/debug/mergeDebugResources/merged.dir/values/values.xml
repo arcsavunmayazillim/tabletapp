@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2" xmlns:ns2="http://schemas.android.com/tools">
+    <array name="com_google_android_gms_fonts_certs">
+        <item>@array/com_google_android_gms_fonts_certs_dev</item>
+        <item>@array/com_google_android_gms_fonts_certs_prod</item>
+    </array>
+    <string-array name="com_google_android_gms_fonts_certs_dev">
+        <item>
+            MIIEqDCCA5CgAwIBAgIJANWFuGx90071MA0GCSqGSIb3DQEBBAUAMIGUMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEQMA4GA1UEChMHQW5kcm9pZDEQMA4GA1UECxMHQW5kcm9pZDEQMA4GA1UEAxMHQW5kcm9pZDEiMCAGCSqGSIb3DQEJARYTYW5kcm9pZEBhbmRyb2lkLmNvbTAeFw0wODA0MTUyMzM2NTZaFw0zNTA5MDEyMzM2NTZaMIGUMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEQMA4GA1UEChMHQW5kcm9pZDEQMA4GA1UECxMHQW5kcm9pZDEQMA4GA1UEAxMHQW5kcm9pZDEiMCAGCSqGSIb3DQEJARYTYW5kcm9pZEBhbmRyb2lkLmNvbTCCASAwDQYJKoZIhvcNAQEBBQADggENADCCAQgCggEBANbOLggKv+IxTdGNs8/TGFy0PTP6DHThvbbR24kT9ixcOd9W+EaBPWW+wPPKQmsHxajtWjmQwWfna8mZuSeJS48LIgAZlKkpFeVyxW0qMBujb8X8ETrWy550NaFtI6t9+u7hZeTfHwqNvacKhp1RbE6dBRGWynwMVX8XW8N1+UjFaq6GCJukT4qmpN2afb8sCjUigq0GuMwYXrFVee74bQgLHWGJwPmvmLHC69EH6kWr22ijx4OKXlSIx2xT1AsSHee70w5iDBiK4aph27yH3TxkXy9V89TDdexAcKk/cVHYNnDBapcavl7y0RiQ4biu8ymM8Ga/nmzhRKya6G0cGw8CAQOjgfwwgfkwHQYDVR0OBBYEFI0cxb6VTEM8YYY6FbBMvAPyT+CyMIHJBgNVHSMEgcEwgb6AFI0cxb6VTEM8YYY6FbBMvAPyT+CyoYGapIGXMIGUMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEQMA4GA1UEChMHQW5kcm9pZDEQMA4GA1UECxMHQW5kcm9pZDEQMA4GA1UEAxMHQW5kcm9pZDEiMCAGCSqGSIb3DQEJARYTYW5kcm9pZEBhbmRyb2lkLmNvbYIJANWFuGx90071MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEEBQADggEBABnTDPEF+3iSP0wNfdIjIz1AlnrPzgAIHVvXxunW7SBrDhEglQZBbKJEk5kT0mtKoOD1JMrSu1xuTKEBahWRbqHsXclaXjoBADb0kkjVEJu/Lh5hgYZnOjvlba8Ld7HCKePCVePoTJBdI4fvugnL8TsgK05aIskyY0hKI9L8KfqfGTl1lzOv2KoWD0KWwtAWPoGChZxmQ+nBli+gwYMzM1vAkP+aayLe0a1EQimlOalO762r0GXO0ks+UeXde2Z4e+8S/pf7pITEI/tP+MxJTALw9QUWEv9lKTk+jkbqxbsh8nfBUapfKqYn0eidpwq2AzVp3juYl7//fKnaPhJD9gs=
+        </item>
+    </string-array>
+    <string-array name="com_google_android_gms_fonts_certs_prod">
+        <item>
+            MIIEQzCCAyugAwIBAgIJAMLgh0ZkSjCNMA0GCSqGSIb3DQEBBAUAMHQxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtHb29nbGUgSW5jLjEQMA4GA1UECxMHQW5kcm9pZDEQMA4GA1UEAxMHQW5kcm9pZDAeFw0wODA4MjEyMzEzMzRaFw0zNjAxMDcyMzEzMzRaMHQxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtHb29nbGUgSW5jLjEQMA4GA1UECxMHQW5kcm9pZDEQMA4GA1UEAxMHQW5kcm9pZDCCASAwDQYJKoZIhvcNAQEBBQADggENADCCAQgCggEBAKtWLgDYO6IIrgqWbxJOKdoR8qtW0I9Y4sypEwPpt1TTcvZApxsdyxMJZ2JORland2qSGT2y5b+3JKkedxiLDmpHpDsz2WCbdxgxRczfey5YZnTJ4VZbH0xqWVW/8lGmPav5xVwnIiJS6HXk+BVKZF+JcWjAsb/GEuq/eFdpuzSqeYTcfi6idkyugwfYwXFU1+5fZKUaRKYCwkkFQVfcAs1fXA5V+++FGfvjJ/CxURaSxaBvGdGDhfXE28LWuT9ozCl5xw4Yq5OGazvV24mZVSoOO0yZ31j7kYvtwYK6NeADwbSxDdJEqO4k//0zOHKrUiGYXtqw/A0LFFtqoZKFjnkCAQOjgdkwgdYwHQYDVR0OBBYEFMd9jMIhF1Ylmn/Tgt9r45jk14alMIGmBgNVHSMEgZ4wgZuAFMd9jMIhF1Ylmn/Tgt9r45jk14aloXikdjB0MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEUMBIGA1UEChMLR29vZ2xlIEluYy4xEDAOBgNVBAsTB0FuZHJvaWQxEDAOBgNVBAMTB0FuZHJvaWSCCQDC4IdGZEowjTAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBBAUAA4IBAQBt0lLO74UwLDYKqs6Tm8/yzKkEu116FmH4rkaymUIE0P9KaMftGlMexFlaYjzmB2OxZyl6euNXEsQH8gjwyxCUKRJNexBiGcCEyj6z+a1fuHHvkiaai+KL8W1EyNmgjmyy8AW7P+LLlkR+ho5zEHatRbM/YAnqGcFh5iZBqpknHf1SKMXFh4dd239FJ1jWYfbMDMy3NS5CTMQ2XFI1MvcyUTdZPErjQfTbQe3aDQsQcafEQPD+nqActifKZ0Np0IS9L9kR/wbNvyz6ENwPiTrjV2KRkEjH78ZMcUQXg0L3BYHJ3lc69Vs5Ddf9uUGGMYldX3WfMBEmh/9iFBDAaTCK
+        </item>
+    </string-array>
     <attr format="reference" name="drawerArrowStyle"/>
     <attr format="dimension" name="height"/>
     <attr format="boolean" name="isLightTheme"/>
@@ -390,7 +404,7 @@
     <string name="default_error_message">"Invalid input"</string>
     <string name="default_popup_window_title" ns2:ignore="ExtraTranslation">"Pop-Up Window"</string>
     <string name="device_dropdown_label">Select Device</string>
-    <string name="device_selection_subtitle">Choose the RFID reader to continue operation.</string>
+    <string name="device_selection_subtitle">Choose the device to continue operation.</string>
     <string name="device_selection_title">Device Selection</string>
     <string name="dropdown_menu">"Dropdown menu"</string>
     <string name="error_company_not_found">Company information could not be loaded.</string>
@@ -489,6 +503,7 @@
     <string name="on">On</string>
     <string name="packet_close_time">Packet close time</string>
     <string name="password">Password</string>
+    <string name="password_hint">Enter your password.</string>
     <string name="range_end">"Range end"</string>
     <string name="range_start">"Range start"</string>
     <string name="reader_settings_title">Reader Settings</string>
@@ -506,6 +521,7 @@
     <string name="shipment_brand_label">Brand (ship to)</string>
     <string name="shipment_cancel">Cancel</string>
     <string name="shipment_clear_selection">Clear</string>
+    <string name="shipment_close">Close</string>
     <string name="shipment_close_consignment_cd">Send shipment to server (close)</string>
     <string name="shipment_color">Color</string>
     <string name="shipment_confirm">Confirm</string>
@@ -524,6 +540,8 @@
     <string name="shipment_dialog_merge_body_n">The %d selected packages will be merged into one.</string>
     <string name="shipment_dialog_merge_title">Merge packages?</string>
     <string name="shipment_dialog_new_title">New shipment</string>
+    <string name="shipment_edit">Edit</string>
+    <string name="shipment_edit_dialog_title">Edit Shipment</string>
     <string name="shipment_epcs">EPCs</string>
     <string name="shipment_error_dismiss">OK</string>
     <string name="shipment_error_new_validation">Select a brand, enter shipment name, a positive expected quantity, and delivery date.</string>
@@ -541,6 +559,7 @@
     <string name="shipment_name_label">Shipment name</string>
     <string name="shipment_new">New shipment</string>
     <string name="shipment_no_packages">No packages yet. Start reading to add batches.</string>
+    <string name="shipment_open_reading_action">Proceed</string>
     <string name="shipment_package_count">%d packages</string>
     <string name="shipment_package_line">Package %1$s</string>
     <string name="shipment_package_no">Package no.</string>
@@ -557,9 +576,10 @@
     <string name="shipment_qr_field_size">Size</string>
     <string name="shipment_qr_no_parsed_fields">Structured fields could not be read from this QR; the scan is still sent in full.</string>
     <string name="shipment_quality">Quality</string>
-    <string name="shipment_read_totals_title">Read totals</string>
+    <string name="shipment_read_totals_title">Reading Summary</string>
     <string name="shipment_reads">%d reads</string>
     <string name="shipment_retry">Retry</string>
+    <string name="shipment_rotate_hint">Please rotate your device</string>
     <string name="shipment_scan_hint">If no new unique tag is read for the packet close time (reader settings), the current batch is sent as one package. Each new tag resets the timer.</string>
     <string name="shipment_scan_start">Start reading</string>
     <string name="shipment_scan_stop">Stop</string>
@@ -579,11 +599,13 @@
     <string name="shipment_size_totals_dialog_title">Shipment details</string>
     <string name="shipment_size_totals_empty">No size breakdown from server.</string>
     <string name="shipment_size_totals_total_label">Total</string>
-    <string name="shipment_stat_extra_alarm">Extra alarm</string>
-    <string name="shipment_stat_total_read">Total read count</string>
-    <string name="shipment_stat_wrong_format">Wrong format</string>
+    <string name="shipment_stat_extra_alarm">Extra Alarm</string>
+    <string name="shipment_stat_total_read">Total Quantity</string>
+    <string name="shipment_stat_wrong_format">Wrong Format</string>
+    <string name="shipment_status_active">Active</string>
     <string name="shipment_status_closed">Closed</string>
     <string name="shipment_status_open">Open</string>
+    <string name="shipment_status_passive">Passive</string>
     <string name="shipment_submitting">Submitting…</string>
     <string name="shipment_title">Shipment</string>
     <string name="shipment_ulogs_logo_cd">ULOGS</string>
@@ -596,6 +618,7 @@
     <string name="tooltip_description">tooltip</string>
     <string name="tooltip_label">show tooltip</string>
     <string name="username">Username</string>
+    <string name="username_hint">Enter your username.</string>
     <string name="weight_enabled">Weight enabled</string>
     <string name="welcome_subtitle">Secure and seamless production tracking for enterprise operations.</string>
     <string name="welcome_title">Industrial RFID Platform</string>

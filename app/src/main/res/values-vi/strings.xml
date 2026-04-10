@@ -4,7 +4,9 @@
     <string name="welcome_subtitle">Theo doi san xuat an toan va lien mach cho van hanh doanh nghiep.</string>
     <string name="login_title">Dang nhap</string>
     <string name="username">Ten dang nhap</string>
+    <string name="username_hint">Nhap ten dang nhap cua ban.</string>
     <string name="password">Mat khau</string>
+    <string name="password_hint">Nhap mat khau cua ban.</string>
     <string name="remember_me">Ghi nho toi</string>
     <string name="login_action">Dang nhap</string>
     <string name="language">Ngon ngu</string>
@@ -16,7 +18,7 @@
     <string name="error_user_info_load">Khong the tai thong tin nguoi dung.</string>
     <string name="error_device_list_load">Khong the tai danh sach thiet bi.</string>
     <string name="device_selection_title">Chon thiet bi</string>
-    <string name="device_selection_subtitle">Chon may doc RFID de tiep tuc thao tac.</string>
+    <string name="device_selection_subtitle">Chon thiet bi de tiep tuc thao tac.</string>
     <string name="error_company_not_found">Khong the tai thong tin cong ty.</string>
     <string name="no_devices_found">Khong tim thay thiet bi cho cong ty nay.</string>
     <string name="no_box_devices_found">Khong co thiet bi loai box.</string>
@@ -81,6 +83,8 @@
 
     <string name="shipment_title">Van chuyen</string>
     <string name="shipment_new">Tao van chuyen moi</string>
+    <string name="shipment_edit">Chinh sua</string>
+    <string name="shipment_close">Dong</string>
     <string name="shipment_packages_header">Kien hang va luot doc</string>
     <string name="shipment_select_hint">Chon mot van chuyen trong danh sach.</string>
     <string name="shipment_status_open">Dang mo</string>
@@ -166,4 +170,5 @@
     <string name="shipment_dialog_merge_body">Hai kien duoc chon se duoc gop thanh mot.</string>
     <string name="shipment_confirm">Xac nhan</string>
     <string name="shipment_cancel">Huy</string>
+    <string name="shipment_edit_dialog_title">Chinh sua lo hang</string>
 </resources>

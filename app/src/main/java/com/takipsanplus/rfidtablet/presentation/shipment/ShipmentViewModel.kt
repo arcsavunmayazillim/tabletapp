@@ -231,11 +231,16 @@ class ShipmentViewModel(
                     }
                 }
                 .onFailure { e ->
-                    _state.update {
-                        it.copy(
-                            isLoadingPackages = false,
-                            shipmentError = e.message ?: "packages_failed"
-                        )
+                    val msg = e.message ?: "packages_failed"
+                    if (msg.contains("paket bulunamadı", ignoreCase = true)) {
+                        _state.update { it.copy(isLoadingPackages = false, packages = emptyList()) }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                isLoadingPackages = false,
+                                shipmentError = msg
+                            )
+                        }
                     }
                 }
         }
@@ -558,6 +563,70 @@ class ShipmentViewModel(
         }
     }
 
+    fun showEditShipmentDialog() {
+        val sid = _state.value.selectedShipmentId ?: return
+        val s = shipmentStore[sid] ?: return
+        _state.update {
+            it.copy(
+                dialog = ShipmentDialog.EditShipment(
+                    draftName = s.name,
+                    draftExpectedCount = if (s.expectedItemCount > 0) s.expectedItemCount.toString() else "",
+                    draftDeliveryDate = s.createdAtLabel
+                )
+            )
+        }
+    }
+
+    fun updateEditShipmentDraftName(name: String) {
+        _state.update { s ->
+            when (val d = s.dialog) {
+                is ShipmentDialog.EditShipment -> s.copy(dialog = d.copy(draftName = name))
+                else -> s
+            }
+        }
+    }
+
+    fun updateEditShipmentDraftExpectedCount(value: String) {
+        val digits = value.filter { it.isDigit() }.take(9)
+        _state.update { s ->
+            when (val d = s.dialog) {
+                is ShipmentDialog.EditShipment -> s.copy(dialog = d.copy(draftExpectedCount = digits))
+                else -> s
+            }
+        }
+    }
+
+    fun updateEditShipmentDraftDeliveryDate(value: String) {
+        _state.update { s ->
+            when (val d = s.dialog) {
+                is ShipmentDialog.EditShipment -> s.copy(dialog = d.copy(draftDeliveryDate = value))
+                else -> s
+            }
+        }
+    }
+
+    fun confirmEditShipment() {
+        val d = _state.value.dialog as? ShipmentDialog.EditShipment ?: return
+        if (d.isSubmitting) return
+        val sid = _state.value.selectedShipmentId ?: return
+        val existing = shipmentStore[sid] ?: return
+        val name = d.draftName.trim()
+        val expected = d.draftExpectedCount.trim().toIntOrNull() ?: existing.expectedItemCount
+        val date = d.draftDeliveryDate.trim().ifBlank { existing.createdAtLabel }
+        if (name.isBlank()) {
+            _state.update { it.copy(shipmentError = "validation") }
+            return
+        }
+        val updated = existing.copy(name = name, expectedItemCount = expected, createdAtLabel = date)
+        shipmentStore[sid] = updated
+        _state.update { st ->
+            st.copy(
+                dialog = ShipmentDialog.None,
+                shipments = st.shipments.map { if (it.id == sid) updated else it }
+            )
+        }
+    }
+
     fun dismissDialog() {
         _state.update { it.copy(dialog = ShipmentDialog.None) }
     }
@@ -594,7 +663,7 @@ class ShipmentViewModel(
             )
             consignmentRepository.addConsignmentZaraStore(token, companyId, body)
                 .onSuccess {
-                    _state.update { it.copy(dialog = ShipmentDialog.None) }
+                    _state.update { it.copy(dialog = ShipmentDialog.None, successfulCreationRequestId = it.successfulCreationRequestId + 1) }
                     refreshConsignments()
                 }
                 .onFailure { e ->

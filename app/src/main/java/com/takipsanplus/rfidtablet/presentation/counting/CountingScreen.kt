@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -84,21 +85,98 @@ fun CountingScreen(
     onStartStopClicked: () -> Unit,
     onClearClicked: () -> Unit
 ) {
+    val isWide = androidx.compose.ui.platform.LocalConfiguration.current.smallestScreenWidthDp >= 600
+
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFFF3F4F9))
+            .systemBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
-        PremiumScreenBackdrop(Modifier.fillMaxSize())
 
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
+        if (isWide) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(0.34f)
+                        .fillMaxHeight()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null,
+                                tint = ExecutiveInk
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = localizedString(R.string.counting_title, language),
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    letterSpacing = (-0.2).sp
+                                ),
+                                color = ExecutiveInk,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = localizedString(R.string.counting_subtitle, language),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = ExecutiveMuted,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    if (!uiState.isDeviceConnected && uiState.showDisconnectedWarning) {
+                        DisconnectedBadge()
+                        Spacer(modifier = Modifier.height(12.dp))
+                    } else if (uiState.isReading) {
+                        LiveReadingBadge(language = language)
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        UniqueCountHero(
+                            language = language,
+                            count = uiState.uniqueCount,
+                            isReading = uiState.isReading,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    CountingBottomIconBar(
+                        language = language,
+                        isReading = uiState.isReading,
+                        onStartStopClicked = onStartStopClicked,
+                        onClearClicked = onClearClicked
+                    )
+                }
+
+                EpcGlassPanel(
+                    language = language,
+                    epcs = uiState.uniqueEpcs,
+                    modifier = Modifier
+                        .weight(0.66f)
+                        .fillMaxHeight()
+                )
+            }
+        } else {
             Column(
-                modifier = Modifier
-                    .weight(0.34f)
-                    .fillMaxHeight()
+                modifier = Modifier.fillMaxSize()
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -111,60 +189,174 @@ fun CountingScreen(
                             tint = ExecutiveInk
                         )
                     }
-                    Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = localizedString(R.string.counting_title, language),
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = (-0.2).sp
+                        ),
+                        color = ExecutiveInk,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    if (!uiState.isDeviceConnected && uiState.showDisconnectedWarning) {
+                        DisconnectedBadge()
+                    } else if (uiState.isReading) {
+                        LiveReadingBadge(language = language)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Button(
+                        onClick = onStartStopClicked,
+                        modifier = Modifier
+                            .weight(0.7f)
+                            .height(68.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (uiState.isReading) Color(0xFFE11D48) else PrimaryBlue
+                        ),
+                        contentPadding = PaddingValues(0.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                    ) {
                         Text(
-                            text = localizedString(R.string.counting_title, language),
-                            style = MaterialTheme.typography.headlineSmall.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = (-0.2).sp
-                            ),
-                            color = ExecutiveInk,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            text = if (uiState.isReading) "DURDUR" else "BAŞLAT",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium.copy(letterSpacing = 1.sp)
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = localizedString(R.string.counting_subtitle, language),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = ExecutiveMuted,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis
+                    }
+                    
+                    Button(
+                        onClick = onClearClicked,
+                        modifier = Modifier
+                            .weight(0.3f)
+                            .height(68.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = ExecutiveInk
+                        ),
+                        contentPadding = PaddingValues(0.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 1.dp,
+                            brush = Brush.linearGradient(
+                                listOf(PrimaryBlue.copy(alpha = 0.25f), PrimaryBlue.copy(alpha = 0.1f))
+                            )
+                        )
+                    ) {
+                        Icon(
+                            Icons.Filled.DeleteOutline,
+                            contentDescription = localizedString(R.string.clear_action, language),
+                            modifier = Modifier.size(28.dp),
+                            tint = PrimaryBlue
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                if (uiState.isReading) {
-                    LiveReadingBadge(language = language)
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-                Box(
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    UniqueCountHero(
-                        language = language,
-                        count = uiState.uniqueCount,
-                        isReading = uiState.isReading,
-                        modifier = Modifier.fillMaxWidth()
+                    Text(
+                        text = localizedString(R.string.counting_read_count_label, language),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = ExecutiveInk
+                    )
+                    Text(
+                        text = uiState.uniqueCount.toString(),
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace
+                        ),
+                        color = if (uiState.isReading) PrimaryBlue else ExecutiveInk
                     )
                 }
-                CountingBottomIconBar(
-                    language = language,
-                    isReading = uiState.isReading,
-                    onStartStopClicked = onStartStopClicked,
-                    onClearClicked = onClearClicked
-                )
-            }
 
-            EpcGlassPanel(
-                language = language,
-                epcs = uiState.uniqueEpcs,
-                modifier = Modifier
-                    .weight(0.66f)
-                    .fillMaxHeight()
-            )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.White)
+                ) {
+                    if (uiState.uniqueEpcs.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "—",
+                                    style = MaterialTheme.typography.displaySmall,
+                                    color = ExecutiveMuted.copy(alpha = 0.22f)
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = localizedString(R.string.counting_empty, language),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = ExecutiveMuted,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(12.dp)
+                        ) {
+                            itemsIndexed(uiState.uniqueEpcs, key = { _, e -> e }) { index, epc ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFFF8FAFC))
+                                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = String.format("%03d", index + 1),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = ExecutiveMuted.copy(alpha = 0.65f),
+                                        modifier = Modifier.width(40.dp)
+                                    )
+                                    Text(
+                                        text = epc,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Medium,
+                                        color = ExecutiveInk,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -340,7 +532,7 @@ private fun CountingBottomIconBar(
             onClick = onStartStopClicked,
             modifier = Modifier
                 .weight(1f)
-                .height(56.dp),
+                .height(68.dp),
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isReading) Color(0xFFE11D48) else PrimaryBlue
@@ -366,7 +558,7 @@ private fun CountingBottomIconBar(
             onClick = onClearClicked,
             modifier = Modifier
                 .weight(1f)
-                .height(56.dp),
+                .height(68.dp),
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFF1F5F9),
@@ -491,5 +683,38 @@ private fun EpcRowCard(epc: String, index: Int) {
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
         )
+    }
+}
+
+@Composable
+fun DisconnectedBadge() {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(100.dp))
+                .background(Color(0xFFFEE2E2))
+                .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.35f), androidx.compose.foundation.shape.RoundedCornerShape(100.dp))
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(Color(0xFFEF4444))
+                )
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = "Bluetooth Bağlı Değil",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = Color(0xFFB91C1C),
+                letterSpacing = 0.3.sp,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+        }
     }
 }

@@ -69,7 +69,8 @@ fun RfidApp() {
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0)
     ) { _ ->
         NavHost(navController = navController, startDestination = NavRoutes.LOGIN) {
             composable(NavRoutes.LOGIN) {
@@ -123,9 +124,7 @@ fun RfidApp() {
                             is DeviceSelectionEvent.NavigateHome -> {
                                 navController.navigate(
                                     "${NavRoutes.HOME}?device=${Uri.encode(event.selectedDeviceName)}"
-                                ) {
-                                    popUpTo(NavRoutes.DEVICE_SELECTION) { inclusive = true }
-                                }
+                                )
                             }
                         }
                     }
@@ -208,6 +207,11 @@ fun RfidApp() {
                     onConfirmDelete = shipmentViewModel::confirmDeletePackage,
                     onConfirmMerge = shipmentViewModel::confirmMergePackages,
                     onConfirmCloseConsignment = shipmentViewModel::confirmCloseConsignment,
+                    onShowEditShipment = shipmentViewModel::showEditShipmentDialog,
+                    onUpdateEditShipmentDraftName = shipmentViewModel::updateEditShipmentDraftName,
+                    onUpdateEditShipmentDraftExpectedCount = shipmentViewModel::updateEditShipmentDraftExpectedCount,
+                    onUpdateEditShipmentDraftDeliveryDate = shipmentViewModel::updateEditShipmentDraftDeliveryDate,
+                    onConfirmEditShipment = shipmentViewModel::confirmEditShipment,
                     onQrScannerFinished = shipmentViewModel::onQrScannerFinished,
                     onConfirmPendingQr = shipmentViewModel::confirmPendingQrAndStartEpc,
                     onDismissPendingQrRescan = shipmentViewModel::dismissPendingQrAndRescan,

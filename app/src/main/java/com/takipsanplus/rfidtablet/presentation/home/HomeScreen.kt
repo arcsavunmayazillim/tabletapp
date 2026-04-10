@@ -9,6 +9,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
@@ -56,6 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.takipsanplus.rfidtablet.R
@@ -80,6 +82,7 @@ fun HomeScreen(
     onShipmentClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
+    val isWide = LocalConfiguration.current.smallestScreenWidthDp >= 600
     var entranceStep by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) {
         delay(40)
@@ -88,6 +91,37 @@ fun HomeScreen(
         entranceStep = 2
         delay(100)
         entranceStep = 3
+    }
+
+    val gradients = remember {
+        listOf(
+            listOf(Color(0xFF1557C8), Color(0xFF3B82F6), Color(0xFF60A5FA)),
+            listOf(Color(0xFF0F766E), Color(0xFF14B8A6), Color(0xFF5EEAD4)),
+            listOf(Color(0xFFB45309), Color(0xFFF97316), Color(0xFFFBBF24))
+        )
+    }
+
+    val countingTitle = localizedString(R.string.module_counting, language)
+    val countingSubtitle = localizedString(R.string.module_counting_subtitle, language)
+    val shipmentTitle = localizedString(R.string.module_shipment, language)
+    val shipmentSubtitle = localizedString(R.string.module_shipment_subtitle, language)
+    val settingsTitle = localizedString(R.string.module_settings, language)
+    val settingsSubtitle = localizedString(R.string.module_settings_subtitle, language)
+
+    val modules = remember(
+        language,
+        countingTitle,
+        countingSubtitle,
+        shipmentTitle,
+        shipmentSubtitle,
+        settingsTitle,
+        settingsSubtitle
+    ) {
+        listOf(
+            Triple(Icons.Default.Inventory2, countingTitle, countingSubtitle) to onCountingClick,
+            Triple(Icons.Default.LocalShipping, shipmentTitle, shipmentSubtitle) to onShipmentClick,
+            Triple(Icons.Default.Settings, settingsTitle, settingsSubtitle) to onSettingsClick
+        )
     }
 
     Box(
@@ -101,7 +135,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top
         ) {
-            androidx.compose.animation.AnimatedVisibility(
+            AnimatedVisibility(
                 visible = entranceStep >= 1,
                 enter = fadeIn(tween(400)) + slideInVertically(
                     tween(450),
@@ -113,66 +147,82 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val gradients = listOf(
-                listOf(Color(0xFF1557C8), Color(0xFF3B82F6), Color(0xFF60A5FA)),
-                listOf(Color(0xFF0F766E), Color(0xFF14B8A6), Color(0xFF5EEAD4)),
-                listOf(Color(0xFFB45309), Color(0xFFF97316), Color(0xFFFBBF24))
-            )
-
-            val modules = listOf(
-                Triple(
-                    Icons.Default.Inventory2,
-                    localizedString(R.string.module_counting, language),
-                    localizedString(R.string.module_counting_subtitle, language)
-                ) to onCountingClick,
-                Triple(
-                    Icons.Default.LocalShipping,
-                    localizedString(R.string.module_shipment, language),
-                    localizedString(R.string.module_shipment_subtitle, language)
-                ) to onShipmentClick,
-                Triple(
-                    Icons.Default.Settings,
-                    localizedString(R.string.module_settings, language),
-                    localizedString(R.string.module_settings_subtitle, language)
-                ) to onSettingsClick
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                modules.forEachIndexed { index, (triple, onClick) ->
-                    val (icon, title, subtitle) = triple
-                    val visible = entranceStep > index
-                    androidx.compose.animation.AnimatedVisibility(
-                        visible = visible,
-                        enter = fadeIn(tween(380, delayMillis = index * 80)) +
-                            scaleIn(
-                                initialScale = 0.88f,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                                    stiffness = Spring.StiffnessMediumLow
+            if (isWide) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    modules.forEachIndexed { index, (triple, onClick) ->
+                        val (icon, title, subtitle) = triple
+                        val visible = entranceStep > index
+                        AnimatedVisibility(
+                            visible = visible,
+                            enter = fadeIn(tween(380, delayMillis = index * 80)) +
+                                scaleIn(
+                                    initialScale = 0.88f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMediumLow
+                                    )
+                                ) +
+                                slideInVertically(
+                                    tween(380, delayMillis = index * 80),
+                                    initialOffsetY = { it / 12 }
+                                ),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            PremiumModuleCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(ModuleCardHeight),
+                                indexLabel = String.format("%02d", index + 1),
+                                icon = icon,
+                                title = title,
+                                subtitle = subtitle,
+                                gradientColors = gradients[index],
+                                onClick = onClick,
+                                shimmerPhase = index * 0.33f
+                            )
+                        }
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    modules.forEachIndexed { index, (triple, onClick) ->
+                        val (icon, title, subtitle) = triple
+                        val visible = entranceStep > index
+                        AnimatedVisibility(
+                            visible = visible,
+                            enter = fadeIn(tween(380, delayMillis = index * 80)) +
+                                scaleIn(
+                                    initialScale = 0.88f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMediumLow
+                                    )
+                                ) +
+                                slideInVertically(
+                                    tween(380, delayMillis = index * 80),
+                                    initialOffsetY = { it / 12 }
                                 )
-                            ) +
-                            slideInVertically(
-                                tween(380, delayMillis = index * 80),
-                                initialOffsetY = { it / 12 }
-                            ),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        PremiumModuleCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(ModuleCardHeight),
-                            indexLabel = String.format("%02d", index + 1),
-                            icon = icon,
-                            title = title,
-                            subtitle = subtitle,
-                            gradientColors = gradients[index],
-                            onClick = onClick,
-                            shimmerPhase = index * 0.33f
-                        )
+                        ) {
+                            PremiumModuleCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(130.dp), // Mobil için biraz daha basık kartlar
+                                indexLabel = String.format("%02d", index + 1),
+                                icon = icon,
+                                title = title,
+                                subtitle = subtitle,
+                                gradientColors = gradients[index],
+                                onClick = onClick,
+                                shimmerPhase = index * 0.33f
+                            )
+                        }
                     }
                 }
             }

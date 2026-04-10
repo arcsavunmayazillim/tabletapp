@@ -1,9 +1,17 @@
 R_DEF: Internal format may change without notice
 local
+array com_google_android_gms_fonts_certs
+array com_google_android_gms_fonts_certs_dev
+array com_google_android_gms_fonts_certs_prod
 color splash_background
+drawable bg_pat
+drawable bg_pat2
+drawable bg_pat3
+drawable bg_pat4
 drawable splash_takipsan_logo
 drawable takipsan_logo_w
-drawable ulogslogo
+drawable u_logs_logo
+drawable warehouse_bg
 string antenna_1
 string antenna_2
 string antenna_3
@@ -67,6 +75,7 @@ string no_box_devices_found
 string no_devices_found
 string packet_close_time
 string password
+string password_hint
 string reader_settings_title
 string remember_me
 string select_device_placeholder
@@ -80,6 +89,7 @@ string shipment_batch_submitting
 string shipment_brand_label
 string shipment_cancel
 string shipment_clear_selection
+string shipment_close
 string shipment_close_consignment_cd
 string shipment_color
 string shipment_confirm
@@ -98,6 +108,8 @@ string shipment_dialog_merge_body
 string shipment_dialog_merge_body_n
 string shipment_dialog_merge_title
 string shipment_dialog_new_title
+string shipment_edit
+string shipment_edit_dialog_title
 string shipment_epcs
 string shipment_error_dismiss
 string shipment_error_new_validation
@@ -115,6 +127,7 @@ string shipment_model
 string shipment_name_label
 string shipment_new
 string shipment_no_packages
+string shipment_open_reading_action
 string shipment_package_count
 string shipment_package_line
 string shipment_package_no
@@ -134,6 +147,7 @@ string shipment_quality
 string shipment_read_totals_title
 string shipment_reads
 string shipment_retry
+string shipment_rotate_hint
 string shipment_scan_hint
 string shipment_scan_start
 string shipment_scan_stop
@@ -156,14 +170,17 @@ string shipment_size_totals_total_label
 string shipment_stat_extra_alarm
 string shipment_stat_total_read
 string shipment_stat_wrong_format
+string shipment_status_active
 string shipment_status_closed
 string shipment_status_open
+string shipment_status_passive
 string shipment_submitting
 string shipment_title
 string shipment_ulogs_logo_cd
 string start_action
 string stop_action
 string username
+string username_hint
 string weight_enabled
 string welcome_subtitle
 string welcome_title

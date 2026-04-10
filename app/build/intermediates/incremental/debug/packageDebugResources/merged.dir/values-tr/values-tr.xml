@@ -3,7 +3,6 @@
     <string name="antenna_1">Anten 1</string>
     <string name="antenna_2">Anten 2</string>
     <string name="antenna_3">Anten 3</string>
-    <string name="antenna_4">Anten 4</string>
     <string name="app_name">RFID Tablet</string>
     <string name="barcode_enabled">RFID Öncesi QR Zorunlu</string>
     <string name="bluetooth_connect">Bağlan</string>
@@ -31,7 +30,7 @@
     <string name="counting_subtitle">EPC Etiketlerini Okut Ve Benzersiz Listeyi Oluştur.</string>
     <string name="counting_title">Sayım</string>
     <string name="device_dropdown_label">Cihaz Seç</string>
-    <string name="device_selection_subtitle">Operasyona Devam Etmek İçin RFID Okuyucu Seçin.</string>
+    <string name="device_selection_subtitle">Operasyona Devam Etmek İçin Cihaz Seçin.</string>
     <string name="device_selection_title">Cihaz Seçimi</string>
     <string name="error_company_not_found">Şirket Bilgisi Yüklenemedi.</string>
     <string name="error_device_list_load">Cihaz Listesi Yüklenemedi.</string>
@@ -63,6 +62,7 @@
     <string name="no_devices_found">Bu Şirket İçin Cihaz Bulunamadı.</string>
     <string name="packet_close_time">Paket Kapatma Süresi</string>
     <string name="password">Şifre</string>
+    <string name="password_hint">Şifrenizi giriniz.</string>
     <string name="reader_settings_title">Okuyucu Ayarları</string>
     <string name="remember_me">Beni Hatırla</string>
     <string name="select_device_placeholder">Bir Cihaz Seçin</string>
@@ -76,6 +76,7 @@
     <string name="shipment_brand_label">Marka (Gönderim)</string>
     <string name="shipment_cancel">İptal</string>
     <string name="shipment_clear_selection">Temizle</string>
+    <string name="shipment_close">Kapat</string>
     <string name="shipment_close_consignment_cd">Sevkiyatı Sunucuya Gönder (Kapat)</string>
     <string name="shipment_color">Renk</string>
     <string name="shipment_confirm">Onayla</string>
@@ -94,6 +95,8 @@
     <string name="shipment_dialog_merge_body_n">Seçilen %d Paket Tek Pakette Birleştirilecek.</string>
     <string name="shipment_dialog_merge_title">Paketler Birleştirilsin Mi?</string>
     <string name="shipment_dialog_new_title">Yeni Sevkiyat</string>
+    <string name="shipment_edit">Düzenle</string>
+    <string name="shipment_edit_dialog_title">Sevkiyatı Düzenle</string>
     <string name="shipment_epcs">EPC Listesi</string>
     <string name="shipment_error_dismiss">Tamam</string>
     <string name="shipment_error_new_validation">Marka Seçin, Sevkiyat Adı, Pozitif Beklenen Adet Ve Teslim Tarihini Girin.</string>
@@ -111,6 +114,7 @@
     <string name="shipment_name_label">Sevkiyat Adı</string>
     <string name="shipment_new">Yeni Sevkiyat</string>
     <string name="shipment_no_packages">Henüz Paket Yok. Okumayı Başlatın.</string>
+    <string name="shipment_open_reading_action">İlerle</string>
     <string name="shipment_package_count">%d Paket</string>
     <string name="shipment_package_line">Paket %1$s</string>
     <string name="shipment_package_no">Paket No.</string>
@@ -130,6 +134,7 @@
     <string name="shipment_read_totals_title">Okuma Özeti</string>
     <string name="shipment_reads">%d Okuma</string>
     <string name="shipment_retry">Yeniden Dene</string>
+    <string name="shipment_rotate_hint">Lütfen cihazınızı yan çevirin</string>
     <string name="shipment_scan_hint">Okuyucu Ayarındaki Paket Kapatma Süresi Boyunca Yeni Benzersiz Etiket Okunmazsa Mevcut Okumalar Tek Paket Olarak Sunucuya Gider. Her Yeni Etiket Süreyi Sıfırlar.</string>
     <string name="shipment_scan_start">Okumayı Başlat</string>
     <string name="shipment_scan_stop">Durdur</string>
@@ -149,17 +154,20 @@
     <string name="shipment_size_totals_dialog_title">Sevkiyat Detayları</string>
     <string name="shipment_size_totals_empty">Sunucudan Beden Dağılımı Yok.</string>
     <string name="shipment_size_totals_total_label">Toplam</string>
-    <string name="shipment_stat_extra_alarm">Toplam Ekstra Alarm</string>
-    <string name="shipment_stat_total_read">Toplam Okunan Adet</string>
-    <string name="shipment_stat_wrong_format">Toplam Yanlış Format</string>
+    <string name="shipment_stat_extra_alarm">Extra Alarm</string>
+    <string name="shipment_stat_total_read">Toplam Adet</string>
+    <string name="shipment_stat_wrong_format">Yanlış Format</string>
+    <string name="shipment_status_active">Aktif</string>
     <string name="shipment_status_closed">Kapalı</string>
     <string name="shipment_status_open">Açık</string>
+    <string name="shipment_status_passive">Pasif</string>
     <string name="shipment_submitting">Gönderiliyor…</string>
     <string name="shipment_title">Sevkiyat</string>
     <string name="shipment_ulogs_logo_cd">ULOGS</string>
     <string name="start_action">Başlat</string>
     <string name="stop_action">Durdur</string>
     <string name="username">Kullanıcı Adı</string>
+    <string name="username_hint">Kullanıcı adınızı giriniz.</string>
     <string name="weight_enabled">Ağırlık Açık</string>
     <string name="welcome_subtitle">Kurumsal Operasyonlar İçin Güvenli Ve Kesintisiz Üretim Takibi.</string>
     <string name="welcome_title">Endüstriyel RFID Platformu</string>

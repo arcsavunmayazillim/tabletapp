@@ -4,7 +4,9 @@
     <string name="welcome_subtitle">Secure and seamless production tracking for enterprise operations.</string>
     <string name="login_title">Sign In</string>
     <string name="username">Username</string>
+    <string name="username_hint">Enter your username.</string>
     <string name="password">Password</string>
+    <string name="password_hint">Enter your password.</string>
     <string name="remember_me">Remember me</string>
     <string name="login_action">Login</string>
     <string name="language">Language</string>
@@ -16,13 +18,14 @@
     <string name="error_user_info_load">User information could not be loaded.</string>
     <string name="error_device_list_load">Device list could not be loaded.</string>
     <string name="device_selection_title">Device Selection</string>
-    <string name="device_selection_subtitle">Choose the RFID reader to continue operation.</string>
+    <string name="device_selection_subtitle">Choose the device to continue operation.</string>
     <string name="error_company_not_found">Company information could not be loaded.</string>
     <string name="no_devices_found">No devices found for this company.</string>
     <string name="no_box_devices_found">No box type devices found.</string>
     <string name="device_dropdown_label">Select Device</string>
     <string name="select_device_placeholder">Choose a device</string>
     <string name="continue_action">Continue</string>
+
     <string name="error_select_device">Please select a device.</string>
     <string name="home_title">Operations Dashboard</string>
     <string name="selected_device_label">Selected device</string>
@@ -82,10 +85,14 @@
     <!-- Shipment -->
     <string name="shipment_title">Shipment</string>
     <string name="shipment_new">New shipment</string>
+    <string name="shipment_edit">Edit</string>
+    <string name="shipment_close">Close</string>
     <string name="shipment_packages_header">Packages &amp; reads</string>
     <string name="shipment_select_hint">Select a shipment from the list.</string>
     <string name="shipment_status_open">Open</string>
     <string name="shipment_status_closed">Closed</string>
+    <string name="shipment_status_active">Active</string>
+    <string name="shipment_status_passive">Passive</string>
     <string name="shipment_package_count">%d packages</string>
     <string name="shipment_scan_title">RFID read</string>
     <string name="shipment_scan_hint">If no new unique tag is read for the packet close time (reader settings), the current batch is sent as one package. Each new tag resets the timer.</string>
@@ -142,10 +149,10 @@
     <string name="shipment_find_package_dialog_title">Tag lookup</string>
     <string name="shipment_find_package_column_package">Package</string>
     <string name="shipment_find_package_error_title">Tag lookup</string>
-    <string name="shipment_read_totals_title">Read totals</string>
-    <string name="shipment_stat_total_read">Total read count</string>
-    <string name="shipment_stat_wrong_format">Wrong format</string>
-    <string name="shipment_stat_extra_alarm">Extra alarm</string>
+    <string name="shipment_read_totals_title">Reading Summary</string>
+    <string name="shipment_stat_total_read">Total Quantity</string>
+    <string name="shipment_stat_wrong_format">Wrong Format</string>
+    <string name="shipment_stat_extra_alarm">Extra Alarm</string>
     <string name="shipment_dialog_new_title">New shipment</string>
     <string name="shipment_dialog_edit_title">Rename shipment</string>
     <string name="shipment_brand_label">Brand (ship to)</string>
@@ -167,4 +174,8 @@
     <string name="shipment_dialog_merge_body">The two selected packages will be combined into one (read counts and EPCs merged).</string>
     <string name="shipment_confirm">Confirm</string>
     <string name="shipment_cancel">Cancel</string>
+    <string name="shipment_edit_dialog_title">Edit Shipment</string>
+    <string name="shipment_rotate_hint">Please rotate your device</string>
+    <string name="shipment_open_reading_action">Proceed</string>
 </resources>
+

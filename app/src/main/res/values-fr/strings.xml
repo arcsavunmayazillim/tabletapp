@@ -4,7 +4,9 @@
     <string name="welcome_subtitle">Suivi de production securise et fluide pour les operations d entreprise.</string>
     <string name="login_title">Connexion</string>
     <string name="username">Nom d utilisateur</string>
+    <string name="username_hint">Entrez votre nom d utilisateur.</string>
     <string name="password">Mot de passe</string>
+    <string name="password_hint">Entrez votre mot de passe.</string>
     <string name="remember_me">Se souvenir de moi</string>
     <string name="login_action">Se connecter</string>
     <string name="language">Langue</string>
@@ -16,7 +18,7 @@
     <string name="error_user_info_load">Impossible de charger les informations utilisateur.</string>
     <string name="error_device_list_load">Impossible de charger la liste des appareils.</string>
     <string name="device_selection_title">Selection de l appareil</string>
-    <string name="device_selection_subtitle">Choisissez le lecteur RFID pour poursuivre l operation.</string>
+    <string name="device_selection_subtitle">Choisissez l appareil pour poursuivre l operation.</string>
     <string name="error_company_not_found">Les informations sur l entreprise n ont pas pu etre chargees.</string>
     <string name="no_devices_found">Aucun appareil trouve pour cette entreprise.</string>
     <string name="no_box_devices_found">Aucun appareil de type box.</string>
@@ -81,6 +83,8 @@
 
     <string name="shipment_title">Expedition</string>
     <string name="shipment_new">Nouvelle expedition</string>
+    <string name="shipment_edit">Modifier</string>
+    <string name="shipment_close">Fermer</string>
     <string name="shipment_packages_header">Colis et lectures</string>
     <string name="shipment_select_hint">Selectionnez une expedition dans la liste.</string>
     <string name="shipment_status_open">Ouverte</string>
@@ -166,4 +170,5 @@
     <string name="shipment_dialog_merge_body">Les deux colis selectionnes seront fusionnes en un seul.</string>
     <string name="shipment_confirm">Confirmer</string>
     <string name="shipment_cancel">Annuler</string>
+    <string name="shipment_edit_dialog_title">Modifier l\'expedition</string>
 </resources>

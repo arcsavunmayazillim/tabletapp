@@ -87,7 +87,7 @@
     <string msgid="8038256446254964252" name="default_error_message">"Données incorrectes"</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"Fenêtre pop-up"</string>
     <string name="device_dropdown_label">Selectionner un appareil</string>
-    <string name="device_selection_subtitle">Choisissez le lecteur RFID pour poursuivre l operation.</string>
+    <string name="device_selection_subtitle">Choisissez l appareil pour poursuivre l operation.</string>
     <string name="device_selection_title">Selection de l appareil</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"Menu déroulant"</string>
     <string name="error_company_not_found">Les informations sur l entreprise n ont pas pu etre chargees.</string>
@@ -182,6 +182,7 @@
     <string msgid="8655164131929253426" name="on">"Activé"</string>
     <string name="packet_close_time">Delai de fermeture de paquet</string>
     <string name="password">Mot de passe</string>
+    <string name="password_hint">Entrez votre mot de passe.</string>
     <string msgid="5941395253238309765" name="range_end">"Fin de plage"</string>
     <string msgid="7097486360902471446" name="range_start">"Début de plage"</string>
     <string name="reader_settings_title">Parametres du lecteur</string>
@@ -199,6 +200,7 @@
     <string name="shipment_brand_label">Marque (destination)</string>
     <string name="shipment_cancel">Annuler</string>
     <string name="shipment_clear_selection">Effacer</string>
+    <string name="shipment_close">Fermer</string>
     <string name="shipment_close_consignment_cd">Envoyer expedition au serveur (fermer)</string>
     <string name="shipment_color">Couleur</string>
     <string name="shipment_confirm">Confirmer</string>
@@ -217,6 +219,8 @@
     <string name="shipment_dialog_merge_body_n">Les %d colis selectionnes seront fusionnes en un.</string>
     <string name="shipment_dialog_merge_title">Fusionner les colis?</string>
     <string name="shipment_dialog_new_title">Nouvelle expedition</string>
+    <string name="shipment_edit">Modifier</string>
+    <string name="shipment_edit_dialog_title">Modifier l\'expedition</string>
     <string name="shipment_epcs">EPC</string>
     <string name="shipment_error_dismiss">OK</string>
     <string name="shipment_error_new_validation">Choisissez une marque, le nom, une quantite positive et la date.</string>
@@ -289,6 +293,7 @@
     <string msgid="3765533235322692011" name="tooltip_description">"Info-bulle"</string>
     <string msgid="3124740595719787496" name="tooltip_label">"Afficher l\'info-bulle"</string>
     <string name="username">Nom d utilisateur</string>
+    <string name="username_hint">Entrez votre nom d utilisateur.</string>
     <string name="weight_enabled">Poids active</string>
     <string name="welcome_subtitle">Suivi de production securise et fluide pour les operations d entreprise.</string>
     <string name="welcome_title">Plateforme RFID industrielle</string>

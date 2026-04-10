@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.takipsanplus.rfidtablet.app-mergeDebugResources-58:/values-en-rXC/values-en-rXC.xml",
+            "outputFile": "com.takipsanplus.rfidtablet.app-mergeDebugResources-59:/values-en-rXC/values-en-rXC.xml",
             "map": [
                 {
-                    "source": "/Users/melik/.gradle/caches/transforms-4/62f9fafefe14103476a38e363bbb70e9/transformed/ui-release/res/values-en-rXC/values-en-rXC.xml",
+                    "source": "C:\\Users\\iremo\\.gradle\\caches\\transforms-4\\62f9fafefe14103476a38e363bbb70e9\\transformed\\ui-release\\res\\values-en-rXC\\values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -21,7 +21,24 @@
                     }
                 },
                 {
-                    "source": "/Users/melik/.gradle/caches/transforms-4/affc9b2ef3b3a1eb90e14ca1c1937c12/transformed/material3-release/res/values-en-rXC/values-en-rXC.xml",
+                    "source": "C:\\Users\\iremo\\.gradle\\caches\\transforms-4\\c494d0a06cc6ada1b702e69153fe9bfb\\transformed\\foundation-release\\res\\values-en-rXC\\values-en-rXC.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,243",
+                        "endColumns": "187,186",
+                        "endOffsets": "238,425"
+                    },
+                    "to": {
+                        "startLines": "111,112",
+                        "startColumns": "4,4",
+                        "startOffsets": "22226,22414",
+                        "endColumns": "187,186",
+                        "endOffsets": "22409,22596"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\iremo\\.gradle\\caches\\transforms-4\\affc9b2ef3b3a1eb90e14ca1c1937c12\\transformed\\material3-release\\res\\values-en-rXC\\values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -38,7 +55,7 @@
                     }
                 },
                 {
-                    "source": "/Users/melik/.gradle/caches/transforms-4/5180422ea3b88499bfe31e298975a1b9/transformed/appcompat-1.7.0/res/values-en-rXC/values-en-rXC.xml",
+                    "source": "C:\\Users\\iremo\\.gradle\\caches\\transforms-4\\5180422ea3b88499bfe31e298975a1b9\\transformed\\appcompat-1.7.0\\res\\values-en-rXC\\values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -55,7 +72,7 @@
                     }
                 },
                 {
-                    "source": "/Users/melik/.gradle/caches/transforms-4/3f5faf0d4ef5838e5bb2098fe54e703d/transformed/core-1.13.1/res/values-en-rXC/values-en-rXC.xml",
+                    "source": "C:\\Users\\iremo\\.gradle\\caches\\transforms-4\\3f5faf0d4ef5838e5bb2098fe54e703d\\transformed\\core-1.13.1\\res\\values-en-rXC\\values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
@@ -69,23 +86,6 @@
                         "startOffsets": "5528,5724,5929,6130,6331,6538,6743,21438",
                         "endColumns": "195,204,200,200,206,204,211,203",
                         "endOffsets": "5719,5924,6125,6326,6533,6738,6950,21637"
-                    }
-                },
-                {
-                    "source": "/Users/melik/.gradle/caches/transforms-4/c494d0a06cc6ada1b702e69153fe9bfb/transformed/foundation-release/res/values-en-rXC/values-en-rXC.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,243",
-                        "endColumns": "187,186",
-                        "endOffsets": "238,425"
-                    },
-                    "to": {
-                        "startLines": "111,112",
-                        "startColumns": "4,4",
-                        "startOffsets": "22226,22414",
-                        "endColumns": "187,186",
-                        "endOffsets": "22409,22596"
                     }
                 }
             ]

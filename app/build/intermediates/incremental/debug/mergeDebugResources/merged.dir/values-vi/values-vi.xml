@@ -87,7 +87,7 @@
     <string msgid="8038256446254964252" name="default_error_message">"Giá trị nhập không hợp lệ"</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"Cửa sổ bật lên"</string>
     <string name="device_dropdown_label">Chon thiet bi</string>
-    <string name="device_selection_subtitle">Chon may doc RFID de tiep tuc thao tac.</string>
+    <string name="device_selection_subtitle">Chon thiet bi de tiep tuc thao tac.</string>
     <string name="device_selection_title">Chon thiet bi</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"Trình đơn thả xuống"</string>
     <string name="error_company_not_found">Khong the tai thong tin cong ty.</string>
@@ -182,6 +182,7 @@
     <string msgid="8655164131929253426" name="on">"Đang bật"</string>
     <string name="packet_close_time">Thoi gian dong goi</string>
     <string name="password">Mat khau</string>
+    <string name="password_hint">Nhap mat khau cua ban.</string>
     <string msgid="5941395253238309765" name="range_end">"Điểm kết thúc phạm vi"</string>
     <string msgid="7097486360902471446" name="range_start">"Điểm bắt đầu phạm vi"</string>
     <string name="reader_settings_title">Cai dat may doc</string>
@@ -199,6 +200,7 @@
     <string name="shipment_brand_label">Thuong hieu (noi gui)</string>
     <string name="shipment_cancel">Huy</string>
     <string name="shipment_clear_selection">Xoa chon</string>
+    <string name="shipment_close">Dong</string>
     <string name="shipment_close_consignment_cd">Gui van chuyen len may chu (dong)</string>
     <string name="shipment_color">Mau</string>
     <string name="shipment_confirm">Xac nhan</string>
@@ -217,6 +219,8 @@
     <string name="shipment_dialog_merge_body_n">%d kien da chon se duoc gop thanh mot.</string>
     <string name="shipment_dialog_merge_title">Gop kien?</string>
     <string name="shipment_dialog_new_title">Van chuyen moi</string>
+    <string name="shipment_edit">Chinh sua</string>
+    <string name="shipment_edit_dialog_title">Chinh sua lo hang</string>
     <string name="shipment_epcs">EPC</string>
     <string name="shipment_error_dismiss">OK</string>
     <string name="shipment_error_new_validation">Chon thuong hieu, nhap ten, so luong duong va ngay.</string>
@@ -289,6 +293,7 @@
     <string msgid="3765533235322692011" name="tooltip_description">"chú thích"</string>
     <string msgid="3124740595719787496" name="tooltip_label">"hiện chú thích"</string>
     <string name="username">Ten dang nhap</string>
+    <string name="username_hint">Nhap ten dang nhap cua ban.</string>
     <string name="weight_enabled">Bat trong luong</string>
     <string name="welcome_subtitle">Theo doi san xuat an toan va lien mach cho van hanh doanh nghiep.</string>
     <string name="welcome_title">Nen tang RFID cong nghiep</string>

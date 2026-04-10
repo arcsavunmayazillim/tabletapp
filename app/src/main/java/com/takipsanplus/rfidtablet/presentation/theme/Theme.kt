@@ -20,6 +20,7 @@ private val AppColorScheme = lightColorScheme(
 fun RfidTabletTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = AppColorScheme,
+        typography = AppTypography,
         content = content
     )
 }

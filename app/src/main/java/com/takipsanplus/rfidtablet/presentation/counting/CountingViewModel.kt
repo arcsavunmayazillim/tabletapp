@@ -40,6 +40,23 @@ class CountingViewModel(
     }
 
     init {
+        // Collect bluetooth state
+        viewModelScope.launch {
+            BluetoothConnectionController.state.collectLatest { state ->
+                val isConnected = state is com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionState.Connected
+                _uiState.update { 
+                    it.copy(
+                        isDeviceConnected = isConnected,
+                        // hide the warning automatically if we establish a connection
+                        showDisconnectedWarning = if (isConnected) false else it.showDisconnectedWarning
+                    ) 
+                }
+                if (!isConnected && _uiState.value.isReading) {
+                    stopReading()
+                }
+            }
+        }
+
         // Collect EPCs from bluetooth and add them only while reading.
         viewModelScope.launch {
             BluetoothConnectionController.epcEvents.collectLatest { epc ->
@@ -62,6 +79,14 @@ class CountingViewModel(
     }
 
     fun onStartStopClicked() {
+        if (!uiState.value.isDeviceConnected) {
+            _uiState.update { it.copy(showDisconnectedWarning = true) }
+            return
+        }
+        
+        // Hide warning if we are proceeding
+        _uiState.update { it.copy(showDisconnectedWarning = false) }
+
         if (uiState.value.isReading) {
             stopReading()
         } else {

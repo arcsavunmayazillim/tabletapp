@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.takipsanplus.rfidtablet.app-mergeDebugResources-58:/values-v26/values-v26.xml",
+            "outputFile": "com.takipsanplus.rfidtablet.app-mergeDebugResources-59:/values-v26/values-v26.xml",
             "map": [
                 {
-                    "source": "/Users/melik/.gradle/caches/transforms-4/5180422ea3b88499bfe31e298975a1b9/transformed/appcompat-1.7.0/res/values-v26/values-v26.xml",
+                    "source": "C:\\Users\\iremo\\.gradle\\caches\\transforms-4\\5180422ea3b88499bfe31e298975a1b9\\transformed\\appcompat-1.7.0\\res\\values-v26\\values-v26.xml",
                     "from": {
                         "startLines": "2,3,4,8,12,16",
                         "startColumns": "4,4,4,4,4,4",

@@ -1,6 +1,11 @@
 package com.takipsanplus.rfidtablet.presentation.shipment
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,6 +15,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +29,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,12 +37,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -45,6 +56,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -71,16 +83,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -119,7 +139,7 @@ import java.util.Locale
 
 private val CardLine = Color(0xFFE2E8F0)
 private val CardBg = Color(0xFFFCFCFD)
-/** inditex_qr_flag: hatalı ürün uyarısı — paket satırı arka planı */
+/** inditex_qr_flag */
 private val PackageInditexQrErrorBg = Color(0xFFFFF1F2)
 private val PackageInditexQrErrorBorder = Color(0xFFFECACA)
 private val PanelBg = Color(0xFFF8FAFC)
@@ -155,6 +175,11 @@ fun ShipmentScreen(
     onConfirmDelete: () -> Unit,
     onConfirmMerge: () -> Unit,
     onConfirmCloseConsignment: () -> Unit,
+    onShowEditShipment: () -> Unit,
+    onUpdateEditShipmentDraftName: (String) -> Unit,
+    onUpdateEditShipmentDraftExpectedCount: (String) -> Unit,
+    onUpdateEditShipmentDraftDeliveryDate: (String) -> Unit,
+    onConfirmEditShipment: () -> Unit,
     onQrScannerFinished: (String?) -> Unit,
     onConfirmPendingQr: () -> Unit,
     onDismissPendingQrRescan: () -> Unit,
@@ -164,9 +189,13 @@ fun ShipmentScreen(
     onDismissFindPackageDialog: () -> Unit,
     onFindPackageByTag: () -> Unit
 ) {
+    val isWide = LocalConfiguration.current.smallestScreenWidthDp >= 600
     val context = LocalContext.current
     var qrScanBusy by remember { mutableStateOf(false) }
     val latestPendingQr by rememberUpdatedState(uiState.pendingQrRaw)
+    var phoneDetailVisible by remember { mutableStateOf(false) }
+    var showOrientationHint by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(uiState.qrScanRequestId) {
         if (uiState.qrScanRequestId == 0L) return@LaunchedEffect
@@ -189,77 +218,282 @@ fun ShipmentScreen(
     }
 
     val selected = uiState.shipments.find { it.id == uiState.selectedShipmentId }
+
+    LaunchedEffect(uiState.successfulCreationRequestId) {
+        if (uiState.successfulCreationRequestId == 0L) return@LaunchedEffect
+        // VM refreshConsignments() çağırıyor, biz de seçili olanın (yeni gelen) detayına gidiyoruz
+        delay(300) // Liste yüklenip seçim güncellenene kadar bekle
+        if (selected != null) {
+            if (!isWide) {
+                showOrientationHint = true
+                delay(1200)
+                phoneDetailVisible = true
+                delay(400)
+                showOrientationHint = false
+            } else {
+                // Tablet'te zaten yan yana, ama belki detay yüklenmesi için seçim tetiklenebilir
+                onSelectShipment(selected.id)
+            }
+        }
+    }
+
     val canCloseConsignment =
         selected != null && selected.consignmentRemoteId > 0
     val bluetoothState by BluetoothConnectionController.state.collectAsState()
     val isBluetoothConnected = bluetoothState is BluetoothConnectionState.Connected
     val scanStartEnabled =
         !qrScanBusy && uiState.pendingQrRaw == null && isBluetoothConnected
+    val canScan = uiState.selectedShipmentId != null
     val canFindPackage =
         selected != null &&
             selected.consignmentRemoteId > 0 &&
             isBluetoothConnected &&
             uiState.pendingQrRaw == null &&
             !qrScanBusy
+    val findEnabled = canFindPackage
+    val canSizeTotalsPhone = selected != null && selected.consignmentRemoteId > 0
+
+    // Telefonda sevkiyat seçiliyken geri tuşu listeye döner, uygulamadan çıkmaz
+    if (!isWide) {
+        // Detay ekranı açıldığında yatay moda geç, kapandığında geri al
+        val activity = context.findActivity()
+        LaunchedEffect(phoneDetailVisible) {
+            if (phoneDetailVisible) {
+                activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            } else {
+                activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            }
+        }
+        BackHandler(enabled = phoneDetailVisible) {
+            phoneDetailVisible = false
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .background(Color(0xFFF3F4F9))
     ) {
-        PremiumScreenBackdrop(Modifier.fillMaxSize())
-
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            ShipmentListPane(
-                language = language,
-                shipments = uiState.shipments,
-                selectedId = uiState.selectedShipmentId,
-                isLoading = uiState.isLoadingShipments,
-                listLoadErrorKey = uiState.listLoadErrorKey,
-                onRetry = onRetryConsignments,
-                onDismissListError = onClearListLoadError,
-                onBack = onBack,
-                onSelect = onSelectShipment,
-                onNew = onNewShipment,
-                onCloseConsignment = onShowCloseConsignment,
-                canCloseConsignment = canCloseConsignment,
-                isScanning = uiState.isScanning,
-                currentBatchEpcCount = uiState.currentBatchEpcCount,
-                isSubmittingBatch = uiState.isSubmittingBatch,
-                onToggleScan = onToggleScan,
-                scanStartEnabled = scanStartEnabled,
-                canFindPackage = canFindPackage,
-                isFindPackageLookupActive = uiState.isFindPackageLookupActive,
-                onFindPackageByTag = onFindPackageByTag,
-                modifier = Modifier
-                    .weight(0.36f)
-                    .fillMaxHeight()
-            )
 
-            ShipmentDetailPane(
-                language = language,
-                selected = selected,
-                packages = uiState.packages,
-                expandedIds = uiState.expandedPackageIds,
-                selectedIds = uiState.selectedPackageIds,
-                isLoadingPackages = uiState.isLoadingPackages,
-                onToggleExpand = onToggleExpand,
-                onTogglePackageSelect = onTogglePackageSelect,
-                onClearSelection = onClearSelection,
-                onShowDeletePackage = onShowDeletePackage,
-                onShowDeleteSelected = onShowDeleteSelected,
-                onSelectAllVisiblePackages = onSelectAllVisiblePackages,
-                visiblePackageIds = uiState.packages.map { it.id },
-                onShowMerge = onShowMerge,
-                canSizeTotalsBreakdown = (selected?.consignmentRemoteId ?: 0) > 0,
-                onShowSizeTotalsBreakdown = onShowSizeTotalsBreakdown,
-                modifier = Modifier
-                    .weight(0.64f)
-                    .fillMaxHeight()
-            )
+        if (isWide) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ShipmentListPane(
+                    language = language,
+                    shipments = uiState.shipments,
+                    selectedId = uiState.selectedShipmentId,
+                    isLoading = uiState.isLoadingShipments,
+                    listLoadErrorKey = uiState.listLoadErrorKey,
+                    onRetry = onRetryConsignments,
+                    onDismissListError = onClearListLoadError,
+                    onBack = onBack,
+                    onSelect = onSelectShipment,
+                    onNew = onNewShipment,
+                    onEditShipment = onShowEditShipment,
+                    onCloseConsignment = onShowCloseConsignment,
+                    canCloseConsignment = canCloseConsignment,
+                    isScanning = uiState.isScanning,
+                    currentBatchEpcCount = uiState.currentBatchEpcCount,
+                    isSubmittingBatch = uiState.isSubmittingBatch,
+                    onToggleScan = onToggleScan,
+                    scanStartEnabled = scanStartEnabled,
+                    canFindPackage = canFindPackage,
+                    isFindPackageLookupActive = uiState.isFindPackageLookupActive,
+                    onFindPackageByTag = onFindPackageByTag,
+                    modifier = Modifier
+                        .weight(0.36f)
+                        .fillMaxHeight()
+                )
+                ShipmentDetailPane(
+                    language = language,
+                    selected = selected,
+                    packages = uiState.packages,
+                    expandedIds = uiState.expandedPackageIds,
+                    selectedIds = uiState.selectedPackageIds,
+                    isLoadingPackages = uiState.isLoadingPackages,
+                    onToggleExpand = onToggleExpand,
+                    onTogglePackageSelect = onTogglePackageSelect,
+                    onClearSelection = onClearSelection,
+                    onShowDeletePackage = onShowDeletePackage,
+                    onShowDeleteSelected = onShowDeleteSelected,
+                    onSelectAllVisiblePackages = onSelectAllVisiblePackages,
+                    visiblePackageIds = uiState.packages.map { it.id },
+                    onShowMerge = onShowMerge,
+                    canSizeTotalsBreakdown = (selected?.consignmentRemoteId ?: 0) > 0,
+                    onShowSizeTotalsBreakdown = onShowSizeTotalsBreakdown,
+                    modifier = Modifier
+                        .weight(0.64f)
+                        .fillMaxHeight()
+                )
+            }
+        } else {
+            if (!phoneDetailVisible || selected == null) {
+                ShipmentListPane(
+                    language = language,
+                    shipments = uiState.shipments,
+                    selectedId = uiState.selectedShipmentId,
+                    isLoading = uiState.isLoadingShipments,
+                    listLoadErrorKey = uiState.listLoadErrorKey,
+                    onRetry = onRetryConsignments,
+                    onDismissListError = onClearListLoadError,
+                    onBack = onBack,
+                    onSelect = { id -> onSelectShipment(id) },
+                    onNew = onNewShipment,
+                    onEditShipment = onShowEditShipment,
+                    onCloseConsignment = onShowCloseConsignment,
+                    canCloseConsignment = canCloseConsignment,
+                    isScanning = false,
+                    currentBatchEpcCount = 0,
+                    isSubmittingBatch = false,
+                    onToggleScan = onToggleScan,
+                    scanStartEnabled = false,
+                    canFindPackage = false,
+                    isFindPackageLookupActive = false,
+                    onFindPackageByTag = onFindPackageByTag,
+                    showScanRow = false,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ShipmentDetailPane(
+                        language = language,
+                        selected = selected,
+                        packages = uiState.packages,
+                        expandedIds = uiState.expandedPackageIds,
+                        selectedIds = uiState.selectedPackageIds,
+                        isLoadingPackages = uiState.isLoadingPackages,
+                        onToggleExpand = onToggleExpand,
+                        onTogglePackageSelect = onTogglePackageSelect,
+                        onClearSelection = onClearSelection,
+                        onShowDeletePackage = onShowDeletePackage,
+                        onShowDeleteSelected = onShowDeleteSelected,
+                        onSelectAllVisiblePackages = onSelectAllVisiblePackages,
+                        visiblePackageIds = uiState.packages.map { it.id },
+                        onShowMerge = onShowMerge,
+                        canSizeTotalsBreakdown = canSizeTotalsPhone,
+                        onShowSizeTotalsBreakdown = onShowSizeTotalsBreakdown,
+                        showReadTotals = false,
+                        onBackToList = { phoneDetailVisible = false },
+                        modifier = Modifier
+                            .weight(0.75f)
+                            .fillMaxHeight()
+                    )
+                    // Sağ: tarama butonları + istatistikler
+                    Column(
+                        modifier = Modifier
+                            .weight(0.25f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(PanelBg)
+                            .border(1.dp, PanelStroke, RoundedCornerShape(20.dp))
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = onToggleScan,
+                            enabled = if (uiState.isScanning) canScan else canScan && scanStartEnabled,
+                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (uiState.isScanning) Color(0xFFDC2626) else PrimaryBlue,
+                                disabledContainerColor = ExecutiveMuted.copy(alpha = 0.35f)
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        ) {
+                            Icon(
+                                if (uiState.isScanning) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = onFindPackageByTag,
+                            enabled = findEnabled,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(44.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(
+                                    when {
+                                        !findEnabled -> ExecutiveMuted.copy(alpha = 0.15f)
+                                        uiState.isFindPackageLookupActive -> PrimaryBlue.copy(alpha = 0.2f)
+                                        else -> PrimaryBlue.copy(alpha = 0.12f)
+                                    }
+                                )
+                        ) {
+                            Icon(
+                                Icons.Filled.Search,
+                                contentDescription = null,
+                                tint = if (findEnabled) PrimaryBlue else ExecutiveMuted,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (uiState.isScanning) ScanStatBg else CardBg)
+                                .border(
+                                    1.dp,
+                                    if (uiState.isScanning) PrimaryBlue.copy(alpha = 0.4f) else CardLine,
+                                    RoundedCornerShape(12.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "${uiState.currentBatchEpcCount}",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = if (uiState.isScanning) PrimaryBlue else ExecutiveMuted
+                            )
+                        }
+                        InlineStatCell(
+                            label = localizedString(R.string.shipment_stat_total_read, language),
+                            value = uiState.packages.sumOf { it.readCount },
+                            valueColor = PrimaryBlue,
+                            clickable = canSizeTotalsPhone,
+                            onClick = onShowSizeTotalsBreakdown,
+                            modifier = Modifier.fillMaxWidth().weight(1f)
+                        )
+                        InlineStatCell(
+                            label = localizedString(R.string.shipment_stat_wrong_format, language),
+                            value = uiState.packages.sumOf { it.wrongFormatCount },
+                            valueColor = Color(0xFFEA580C),
+                            modifier = Modifier.fillMaxWidth().weight(1f)
+                        )
+                        InlineStatCell(
+                            label = localizedString(R.string.shipment_stat_extra_alarm, language),
+                            value = uiState.packages.sumOf { it.extraAlarmCount },
+                            valueColor = Color(0xFFDC2626),
+                            modifier = Modifier.fillMaxWidth().weight(1f)
+                        )
+                        if (uiState.isSubmittingBatch) {
+                            Text(
+                                text = localizedString(R.string.shipment_batch_submitting, language),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = PrimaryBlue,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         ShipmentDialogs(
@@ -273,7 +507,11 @@ fun ShipmentScreen(
             onConfirmNew = onConfirmNew,
             onConfirmDelete = onConfirmDelete,
             onConfirmMerge = onConfirmMerge,
-            onConfirmCloseConsignment = onConfirmCloseConsignment
+            onConfirmCloseConsignment = onConfirmCloseConsignment,
+            onEditShipmentDraftName = onUpdateEditShipmentDraftName,
+            onEditShipmentDraftExpectedCount = onUpdateEditShipmentDraftExpectedCount,
+            onEditShipmentDraftDeliveryDate = onUpdateEditShipmentDraftDeliveryDate,
+            onConfirmEdit = onConfirmEditShipment
         )
 
         ShipmentApiMessageDialog(
@@ -306,6 +544,176 @@ fun ShipmentScreen(
             state = uiState.findPackageDialog,
             onDismiss = onDismissFindPackageDialog
         )
+
+        }
+
+        AnimatedVisibility(
+            visible = selected != null && !phoneDetailVisible && !isWide,
+            enter = fadeIn() + expandVertically(expandFrom = Alignment.Bottom),
+            exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Bottom),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            ShipmentSelectionBottomBar(
+                language = language,
+                selected = selected,
+                onEdit = onShowEditShipment,
+                onClose = onShowCloseConsignment,
+                onOpenCount = {
+                    if (selected != null) {
+                        onSelectShipment(selected.id)
+                        if (!isWide) {
+                            scope.launch {
+                                showOrientationHint = true
+                                delay(1200)
+                                phoneDetailVisible = true
+                                delay(400)
+                                showOrientationHint = false
+                            }
+                        }
+                    }
+                }
+            )
+        }
+
+        if (showOrientationHint) {
+            RotationHintOverlay(language = language)
+        }
+    }
+}
+
+@Composable
+private fun ShipmentSelectionBottomBar(
+    language: AppLanguage,
+    selected: ShipmentSummaryUi?,
+    onEdit: () -> Unit,
+    onClose: () -> Unit,
+    onOpenCount: () -> Unit
+) {
+    if (selected == null) return
+    Surface(
+        tonalElevation = 8.dp,
+        shadowElevation = 16.dp,
+        color = Color.White,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 14.dp)
+                .systemBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = selected.name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = ExecutiveInk,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = selected.createdAtLabel,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = ExecutiveMuted,
+                    textAlign = TextAlign.End
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                IconButton(
+                    onClick = onEdit,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF97316))
+                ) {
+                    Icon(Icons.Filled.Edit, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                }
+
+                IconButton(
+                    onClick = onClose,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFDC2626))
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+                }
+
+                Button(
+                    onClick = onOpenCount,
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        localizedString(R.string.shipment_open_reading_action, language),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RotationHintOverlay(language: AppLanguage) {
+    val transition = rememberInfiniteTransition(label = "rotation")
+    val rotation by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = -90f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "iconRotation"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.7f))
+            .clickable(enabled = false) {}, // Tıklamaları engelle
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .graphicsLayer { rotationZ = rotation },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Default.ScreenRotation,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(64.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = localizedString(R.string.shipment_rotate_hint, language),
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -321,6 +729,7 @@ private fun ShipmentListPane(
     onBack: () -> Unit,
     onSelect: (String) -> Unit,
     onNew: () -> Unit,
+    onEditShipment: () -> Unit = {},
     onCloseConsignment: () -> Unit,
     canCloseConsignment: Boolean,
     isScanning: Boolean,
@@ -331,6 +740,7 @@ private fun ShipmentListPane(
     canFindPackage: Boolean,
     isFindPackageLookupActive: Boolean,
     onFindPackageByTag: () -> Unit,
+    showScanRow: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -343,10 +753,7 @@ private fun ShipmentListPane(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .clip(RoundedCornerShape(20.dp))
-            .background(PanelBg)
-            .border(1.dp, PanelStroke, RoundedCornerShape(20.dp))
-            .padding(12.dp)
+            .padding(4.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -355,64 +762,13 @@ private fun ShipmentListPane(
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = ExecutiveInk)
             }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = localizedString(R.string.shipment_title, language),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = ExecutiveInk
-                )
-                Text(
-                    text = localizedString(R.string.module_shipment_subtitle, language),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = ExecutiveMuted,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(
-                onClick = onNew,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(46.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = localizedString(R.string.shipment_new, language),
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
-            IconButton(
-                onClick = onCloseConsignment,
-                enabled = canCloseConsignment,
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(
-                        if (canCloseConsignment) PrimaryBlue.copy(alpha = 0.12f)
-                        else ExecutiveMuted.copy(alpha = 0.2f)
-                    )
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.Send,
-                    contentDescription = localizedString(R.string.shipment_close_consignment_cd, language),
-                    tint = if (canCloseConsignment) PrimaryBlue else ExecutiveMuted,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
+            Text(
+                text = localizedString(R.string.shipment_title, language),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = ExecutiveInk,
+                modifier = Modifier.weight(1f)
+            )
         }
         Spacer(modifier = Modifier.height(10.dp))
         listLoadErrorKey?.let { key ->
@@ -444,6 +800,75 @@ private fun ShipmentListPane(
             }
             Spacer(modifier = Modifier.height(10.dp))
         }
+        // [Arama] — aksiyon satırı
+        if (!isLoading) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // (+) Yeni — mavi — Üstte
+                Row(
+                   modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = onNew,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = null, tint = Color.White)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            localizedString(R.string.shipment_new, language),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = {
+                            Text(
+                                localizedString(R.string.shipment_search_hint, language),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = ExecutiveMuted
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Filled.Search, contentDescription = null, tint = ExecutiveMuted)
+                        },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(Icons.Filled.Clear, contentDescription = null, tint = ExecutiveMuted)
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(14.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryBlue,
+                            unfocusedBorderColor = CardLine,
+                            focusedLabelColor = PrimaryBlue,
+                            cursorColor = PrimaryBlue
+                        )
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+        // Liste içeriği — sadece bu kısım değişken
         when {
             isLoading -> {
                 Box(
@@ -469,87 +894,58 @@ private fun ShipmentListPane(
                     )
                 }
             }
-            else -> {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = {
-                        Text(
-                            localizedString(R.string.shipment_search_hint, language),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = ExecutiveMuted
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(Icons.Filled.Search, contentDescription = null, tint = ExecutiveMuted)
-                    },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Filled.Clear, contentDescription = null, tint = ExecutiveMuted)
-                            }
-                        }
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(14.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryBlue,
-                        unfocusedBorderColor = CardLine,
-                        focusedLabelColor = PrimaryBlue,
-                        cursorColor = PrimaryBlue
+            filteredShipments.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = localizedString(R.string.shipment_search_no_results, language),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = ExecutiveMuted
                     )
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                if (filteredShipments.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = localizedString(R.string.shipment_search_no_results, language),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = ExecutiveMuted
+                }
+            }
+            else -> {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    items(filteredShipments, key = { it.id }) { s ->
+                        ShipmentListCard(
+                            language = language,
+                            item = s,
+                            selected = s.id == selectedId,
+                            onClick = { onSelect(s.id) }
                         )
-                    }
-                } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                    ) {
-                        items(filteredShipments, key = { it.id }) { s ->
-                            ShipmentListCard(
-                                language = language,
-                                item = s,
-                                selected = s.id == selectedId,
-                                onClick = { onSelect(s.id) }
-                            )
-                        }
                     }
                 }
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        ScanRow(
-            language = language,
-            isScanning = isScanning,
-            currentBatchEpcCount = currentBatchEpcCount,
-            isSubmittingBatch = isSubmittingBatch,
-            onToggleScan = onToggleScan,
-            enabled = canScan,
-            startEnabled = scanStartEnabled,
-            canFindPackage = canFindPackage,
-            isFindPackageLookupActive = isFindPackageLookupActive,
-            onFindPackageByTag = onFindPackageByTag
-        )
+        if (showScanRow) {
+            Spacer(modifier = Modifier.height(8.dp))
+            ScanRow(
+                language = language,
+                isScanning = isScanning,
+                currentBatchEpcCount = currentBatchEpcCount,
+                isSubmittingBatch = isSubmittingBatch,
+                onToggleScan = onToggleScan,
+                enabled = canScan,
+                startEnabled = scanStartEnabled,
+                canFindPackage = canFindPackage,
+                isFindPackageLookupActive = isFindPackageLookupActive,
+                onFindPackageByTag = onFindPackageByTag
+            )
+        }
     }
 }
 
 @Composable
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 private fun ShipmentListCard(
     language: AppLanguage,
     item: ShipmentSummaryUi,
@@ -557,7 +953,7 @@ private fun ShipmentListCard(
     onClick: () -> Unit
 ) {
     val border = if (selected) PrimaryBlue.copy(alpha = 0.55f) else CardLine
-    val bg = if (selected) PrimaryBlue.copy(alpha = 0.06f) else CardBg
+    val bg = if (selected) PrimaryBlue.copy(alpha = 0.06f) else Color.White
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -565,30 +961,30 @@ private fun ShipmentListCard(
             .background(bg)
             .border(1.dp, border, RoundedCornerShape(14.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 10.dp),
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .width(3.dp)
-                .height(36.dp)
+                .width(4.dp)
+                .height(40.dp)
                 .clip(RoundedCornerShape(2.dp))
                 .background(if (selected) PrimaryBlue else CardLine.copy(alpha = 0.5f))
         )
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = item.name,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = ExecutiveInk,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = item.createdAtLabel,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = ExecutiveMuted
             )
         }
@@ -613,6 +1009,8 @@ private fun ShipmentDetailPane(
     onShowMerge: () -> Unit,
     canSizeTotalsBreakdown: Boolean,
     onShowSizeTotalsBreakdown: () -> Unit,
+    showReadTotals: Boolean = true,
+    onBackToList: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -641,14 +1039,25 @@ private fun ShipmentDetailPane(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(PrimaryBlue)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
+            if (onBackToList != null) {
+                IconButton(onClick = onBackToList) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint = ExecutiveInk
+                    )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+            } else {
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(PrimaryBlue)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = selected.name,
@@ -661,7 +1070,7 @@ private fun ShipmentDetailPane(
             }
             Spacer(modifier = Modifier.width(8.dp))
             Image(
-                painter = painterResource(R.drawable.ulogslogo),
+                painter = painterResource(R.drawable.u_logs_logo),
                 contentDescription = localizedString(R.string.shipment_ulogs_logo_cd, language),
                 modifier = Modifier
                     .height(40.dp)
@@ -795,15 +1204,17 @@ private fun ShipmentDetailPane(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(10.dp))
-        ShipmentReadTotalsStrip(
-            language = language,
-            totalRead = packages.sumOf { it.readCount },
-            totalWrongFormat = packages.sumOf { it.wrongFormatCount },
-            totalExtraAlarm = packages.sumOf { it.extraAlarmCount },
-            canShowSizeTotalsBreakdown = canSizeTotalsBreakdown,
-            onTotalReadClick = onShowSizeTotalsBreakdown
-        )
+        if (showReadTotals) {
+            Spacer(modifier = Modifier.height(10.dp))
+            ShipmentReadTotalsStrip(
+                language = language,
+                totalRead = packages.sumOf { it.readCount },
+                totalWrongFormat = packages.sumOf { it.wrongFormatCount },
+                totalExtraAlarm = packages.sumOf { it.extraAlarmCount },
+                canShowSizeTotalsBreakdown = canSizeTotalsBreakdown,
+                onTotalReadClick = onShowSizeTotalsBreakdown
+            )
+        }
     }
 }
 
@@ -883,15 +1294,16 @@ private fun ShipmentTotalStatCell(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = ExecutiveMuted,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = ExecutiveInk,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "$value",
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = valueColor,
             maxLines = 1
@@ -910,7 +1322,9 @@ private fun ScanRow(
     startEnabled: Boolean = true,
     canFindPackage: Boolean,
     isFindPackageLookupActive: Boolean,
-    onFindPackageByTag: () -> Unit
+    onFindPackageByTag: () -> Unit,
+    // Okuma özeti — telefon modunda inline gösterim
+    inlineStats: ScanRowStats? = null
 ) {
     val countSp = 42.sp
     val findEnabled = canFindPackage && !isSubmittingBatch
@@ -924,12 +1338,13 @@ private fun ScanRow(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Başlat / Durdur + Paket bul
             Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(0.28f),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
@@ -961,7 +1376,7 @@ private fun ScanRow(
                     enabled = findEnabled,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(46.dp)
+                        .height(44.dp)
                         .clip(RoundedCornerShape(14.dp))
                         .background(
                             if (findEnabled) {
@@ -976,13 +1391,45 @@ private fun ScanRow(
                         Icons.Filled.Search,
                         contentDescription = localizedString(R.string.shipment_find_package_cd, language),
                         tint = if (findEnabled) PrimaryBlue else ExecutiveMuted,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
+
+            // Okuma özeti — inline (telefon modu)
+            if (inlineStats != null) {
+                Column(
+                    modifier = Modifier.weight(0.46f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    InlineStatCell(
+                        label = localizedString(R.string.shipment_stat_total_read, language),
+                        value = inlineStats.totalRead,
+                        valueColor = PrimaryBlue,
+                        clickable = inlineStats.canShowSizeTotalsBreakdown,
+                        onClick = inlineStats.onTotalReadClick,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    InlineStatCell(
+                        label = localizedString(R.string.shipment_stat_wrong_format, language),
+                        value = inlineStats.totalWrongFormat,
+                        valueColor = Color(0xFFEA580C),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    InlineStatCell(
+                        label = localizedString(R.string.shipment_stat_extra_alarm, language),
+                        value = inlineStats.totalExtraAlarm,
+                        valueColor = Color(0xFFDC2626),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            // EPC sayacı
             Box(
                 modifier = Modifier
-                    .defaultMinSize(minWidth = 136.dp, minHeight = 96.dp)
+                    .weight(if (inlineStats != null) 0.26f else 1f)
+                    .defaultMinSize(minHeight = 96.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(if (isScanning) ScanStatBg else CardBg)
                     .border(
@@ -990,7 +1437,7 @@ private fun ScanRow(
                         if (isScanning) PrimaryBlue.copy(alpha = 0.4f) else CardLine,
                         RoundedCornerShape(16.dp)
                     )
-                    .padding(horizontal = 22.dp, vertical = 18.dp),
+                    .padding(horizontal = 8.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -1016,6 +1463,53 @@ private fun ScanRow(
                 textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+private data class ScanRowStats(
+    val totalRead: Int,
+    val totalWrongFormat: Int,
+    val totalExtraAlarm: Int,
+    val canShowSizeTotalsBreakdown: Boolean,
+    val onTotalReadClick: () -> Unit
+)
+
+@Composable
+private fun InlineStatCell(
+    label: String,
+    value: Int,
+    valueColor: Color,
+    modifier: Modifier = Modifier,
+    clickable: Boolean = false,
+    onClick: () -> Unit = {}
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(ScanStatBg)
+            .border(1.dp, CardLine.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+            .then(if (clickable) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 8.dp, vertical = 0.dp)
+            .defaultMinSize(minHeight = 36.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = ExecutiveInk,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(
+            text = "$value",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = valueColor,
+            maxLines = 1
+        )
     }
 }
 
@@ -1067,8 +1561,8 @@ private fun PackageRowCompact(
                         language,
                         packageNumberForDisplay(pkg.packageNo)
                     ),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
                     color = ExecutiveInk,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -1077,7 +1571,7 @@ private fun PackageRowCompact(
                 val sub = listOfNotNull(pkg.model, pkg.size).joinToString(" · ").ifBlank { null }
                 Text(
                     text = sub ?: "—",
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = ExecutiveMuted,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -1088,12 +1582,12 @@ private fun PackageRowCompact(
                     .padding(horizontal = 6.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(PrimaryBlue.copy(alpha = 0.12f))
-                    .padding(horizontal = 12.dp, vertical = 7.dp),
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "${pkg.readCount}",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryBlue,
                     maxLines = 1
@@ -1749,7 +2243,11 @@ private fun ShipmentDialogs(
     onConfirmNew: () -> Unit,
     onConfirmDelete: () -> Unit,
     onConfirmMerge: () -> Unit,
-    onConfirmCloseConsignment: () -> Unit
+    onConfirmCloseConsignment: () -> Unit,
+    onEditShipmentDraftName: (String) -> Unit,
+    onEditShipmentDraftExpectedCount: (String) -> Unit,
+    onEditShipmentDraftDeliveryDate: (String) -> Unit,
+    onConfirmEdit: () -> Unit
 ) {
     when (dialog) {
         ShipmentDialog.None -> {}
@@ -2033,6 +2531,130 @@ private fun ShipmentDialogs(
                     }
                 }
             )
+        }
+        is ShipmentDialog.EditShipment -> {
+            var showDatePicker by remember { mutableStateOf(false) }
+            val initialMillis = remember(dialog.draftDeliveryDate) {
+                parseShipmentDateToMillis(dialog.draftDeliveryDate) ?: System.currentTimeMillis()
+            }
+            val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+            val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
+            val fieldColors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = PrimaryBlue,
+                unfocusedBorderColor = CardLine,
+                focusedLabelColor = PrimaryBlue,
+                cursorColor = PrimaryBlue
+            )
+            Box {
+                AlertDialog(
+                    onDismissRequest = { if (!dialog.isSubmitting) onDismiss() },
+                    title = { Text(localizedString(R.string.shipment_edit_dialog_title, language)) },
+                    text = {
+                        val scroll = rememberScrollState()
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(scroll),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = dialog.draftName,
+                                onValueChange = onEditShipmentDraftName,
+                                enabled = !dialog.isSubmitting,
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text(localizedString(R.string.shipment_name_label, language)) },
+                                singleLine = true,
+                                shape = RoundedCornerShape(14.dp),
+                                colors = fieldColors
+                            )
+                            OutlinedTextField(
+                                value = dialog.draftExpectedCount,
+                                onValueChange = { v ->
+                                    onEditShipmentDraftExpectedCount(v.filter { it.isDigit() }.take(9))
+                                },
+                                enabled = !dialog.isSubmitting,
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text(localizedString(R.string.shipment_expected_count_label, language)) },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = fieldColors
+                            )
+                            OutlinedTextField(
+                                value = dialog.draftDeliveryDate,
+                                onValueChange = {},
+                                readOnly = true,
+                                enabled = !dialog.isSubmitting,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = !dialog.isSubmitting) { showDatePicker = true },
+                                label = { Text(localizedString(R.string.shipment_delivery_date_label, language)) },
+                                placeholder = { Text(localizedString(R.string.shipment_date_hint, language)) },
+                                trailingIcon = {
+                                    IconButton(
+                                        onClick = { showDatePicker = true },
+                                        enabled = !dialog.isSubmitting
+                                    ) {
+                                        Icon(Icons.Filled.Event, contentDescription = null, tint = PrimaryBlue)
+                                    }
+                                },
+                                singleLine = true,
+                                shape = RoundedCornerShape(14.dp),
+                                colors = fieldColors
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = onConfirmEdit,
+                            enabled = !dialog.isSubmitting && dialog.draftName.isNotBlank()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                if (dialog.isSubmitting) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp,
+                                        color = PrimaryBlue
+                                    )
+                                }
+                                Text(localizedString(R.string.shipment_confirm, language))
+                            }
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = onDismiss, enabled = !dialog.isSubmitting) {
+                            Text(localizedString(R.string.shipment_cancel, language))
+                        }
+                    }
+                )
+                if (showDatePicker) {
+                    DatePickerDialog(
+                        onDismissRequest = { showDatePicker = false },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    datePickerState.selectedDateMillis?.let { ms ->
+                                        onEditShipmentDraftDeliveryDate(dateFormat.format(Date(ms)))
+                                    }
+                                    showDatePicker = false
+                                }
+                            ) {
+                                Text(localizedString(R.string.shipment_confirm, language))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDatePicker = false }) {
+                                Text(localizedString(R.string.shipment_cancel, language))
+                            }
+                        }
+                    ) {
+                        DatePicker(state = datePickerState)
+                    }
+                }
+            }
         }
     }
 }

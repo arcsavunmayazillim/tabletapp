@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.takipsanplus.rfidtablet.app-mergeDebugResources-58:/values-night-v8/values-night-v8.xml",
+            "outputFile": "com.takipsanplus.rfidtablet.app-mergeDebugResources-59:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
-                    "source": "/Users/melik/.gradle/caches/transforms-4/5180422ea3b88499bfe31e298975a1b9/transformed/appcompat-1.7.0/res/values-night-v8/values-night-v8.xml",
+                    "source": "C:\\Users\\iremo\\.gradle\\caches\\transforms-4\\5180422ea3b88499bfe31e298975a1b9\\transformed\\appcompat-1.7.0\\res\\values-night-v8\\values-night-v8.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "/Users/melik/.gradle/caches/transforms-4/2dae3168db3828b89db83f86d923128d/transformed/core-splashscreen-1.0.1/res/values-night-v8/values-night-v8.xml",
+                    "source": "C:\\Users\\iremo\\.gradle\\caches\\transforms-4\\2dae3168db3828b89db83f86d923128d\\transformed\\core-splashscreen-1.0.1\\res\\values-night-v8\\values-night-v8.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

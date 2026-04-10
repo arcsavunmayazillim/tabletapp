@@ -49,7 +49,9 @@ data class ShipmentUiState(
     val sizeTotalsDialog: SizeTotalsDialogState = SizeTotalsDialogState.Hidden,
     /** Server `errorMessage` after add package (batch); shown in a warning dialog. */
     val addPackageWarningMessage: String? = null,
-    val findPackageDialog: FindPackageDialogState = FindPackageDialogState.Hidden
+    val findPackageDialog: FindPackageDialogState = FindPackageDialogState.Hidden,
+    /** Incremented on successful creation of a new shipment to trigger auto-navigation to read screen. */
+    val successfulCreationRequestId: Long = 0L
 )
 
 sealed interface ShipmentDialog {
@@ -67,4 +69,10 @@ sealed interface ShipmentDialog {
     data class DeletePackages(val packageIds: List<String>) : ShipmentDialog
     data class MergePackages(val packageIds: List<String>) : ShipmentDialog
     data class CloseConsignment(val isSubmitting: Boolean = false) : ShipmentDialog
+    data class EditShipment(
+        val draftName: String = "",
+        val draftExpectedCount: String = "",
+        val draftDeliveryDate: String = "",
+        val isSubmitting: Boolean = false
+    ) : ShipmentDialog
 }
