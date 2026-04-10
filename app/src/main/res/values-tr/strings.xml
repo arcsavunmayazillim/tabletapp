@@ -174,4 +174,6 @@
     <string name="shipment_edit_dialog_title">Sevkiyatı Düzenle</string>
     <string name="shipment_rotate_hint">Lütfen cihazınızı yan çevirin</string>
     <string name="shipment_open_reading_action">İlerle</string>
+    <string name="back_action">Geri</string>
+    <string name="logout_action">Çıkış Yap</string>
 </resources>

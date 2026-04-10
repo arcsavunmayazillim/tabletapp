@@ -177,5 +177,7 @@
     <string name="shipment_edit_dialog_title">Edit Shipment</string>
     <string name="shipment_rotate_hint">Please rotate your device</string>
     <string name="shipment_open_reading_action">Proceed</string>
+    <string name="back_action">Back</string>
+    <string name="logout_action">Logout</string>
 </resources>
 

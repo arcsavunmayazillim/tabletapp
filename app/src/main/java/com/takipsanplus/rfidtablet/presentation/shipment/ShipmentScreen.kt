@@ -1,7 +1,6 @@
 package com.takipsanplus.rfidtablet.presentation.shipment
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -15,7 +14,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,18 +31,17 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Event
@@ -84,7 +81,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -93,7 +89,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.launch
@@ -104,6 +99,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -115,6 +111,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.takipsanplus.rfidtablet.R
 import com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionController
 import com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionState
@@ -221,8 +219,7 @@ fun ShipmentScreen(
 
     LaunchedEffect(uiState.successfulCreationRequestId) {
         if (uiState.successfulCreationRequestId == 0L) return@LaunchedEffect
-        // VM refreshConsignments() çağırıyor, biz de seçili olanın (yeni gelen) detayına gidiyoruz
-        delay(300) // Liste yüklenip seçim güncellenene kadar bekle
+        delay(300)
         if (selected != null) {
             if (!isWide) {
                 showOrientationHint = true
@@ -231,7 +228,6 @@ fun ShipmentScreen(
                 delay(400)
                 showOrientationHint = false
             } else {
-                // Tablet'te zaten yan yana, ama belki detay yüklenmesi için seçim tetiklenebilir
                 onSelectShipment(selected.id)
             }
         }
@@ -253,9 +249,7 @@ fun ShipmentScreen(
     val findEnabled = canFindPackage
     val canSizeTotalsPhone = selected != null && selected.consignmentRemoteId > 0
 
-    // Telefonda sevkiyat seçiliyken geri tuşu listeye döner, uygulamadan çıkmaz
     if (!isWide) {
-        // Detay ekranı açıldığında yatay moda geç, kapandığında geri al
         val activity = context.findActivity()
         LaunchedEffect(phoneDetailVisible) {
             if (phoneDetailVisible) {
@@ -270,20 +264,20 @@ fun ShipmentScreen(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF3F4F9))
+        modifier = Modifier.fillMaxSize()
     ) {
+        PremiumScreenBackdrop()
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .systemBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
 
         if (isWide) {
             Row(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ShipmentListPane(
@@ -359,11 +353,15 @@ fun ShipmentScreen(
                     isFindPackageLookupActive = false,
                     onFindPackageByTag = onFindPackageByTag,
                     showScanRow = false,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
                 )
             } else {
                 Row(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     ShipmentDetailPane(
@@ -389,7 +387,6 @@ fun ShipmentScreen(
                             .weight(0.75f)
                             .fillMaxHeight()
                     )
-                    // Sağ: tarama butonları + istatistikler
                     Column(
                         modifier = Modifier
                             .weight(0.25f)
@@ -688,7 +685,7 @@ private fun RotationHintOverlay(language: AppLanguage) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.7f))
-            .clickable(enabled = false) {}, // Tıklamaları engelle
+            .clickable(enabled = false) {},
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -800,20 +797,21 @@ private fun ShipmentListPane(
             }
             Spacer(modifier = Modifier.height(10.dp))
         }
-        // [Arama] — aksiyon satırı
+        // arama
         if (!isLoading) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // (+) Yeni — mavi — Üstte
                 Row(
-                   modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
                         onClick = onNew,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .weight(1f)
                             .height(54.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
@@ -825,6 +823,40 @@ private fun ShipmentListPane(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
+                        )
+                    }
+
+                    val iconButtonModifier = Modifier
+                        .size(54.dp)
+                        .clip(RoundedCornerShape(14.dp))
+
+                    val isSelected = selectedId != null
+
+                    IconButton(
+                        onClick = onEditShipment,
+                        enabled = isSelected,
+                        modifier = iconButtonModifier
+                            .background(if (isSelected) Color(0xFFF97316) else ExecutiveMuted.copy(alpha = 0.15f))
+                    ) {
+                        Icon(
+                            Icons.Filled.Edit,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onCloseConsignment,
+                        enabled = isSelected && canCloseConsignment,
+                        modifier = iconButtonModifier
+                            .background(if (isSelected && canCloseConsignment) Color(0xFFDC2626) else ExecutiveMuted.copy(alpha = 0.15f))
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
@@ -868,7 +900,7 @@ private fun ShipmentListPane(
             }
             Spacer(modifier = Modifier.height(10.dp))
         }
-        // Liste içeriği — sadece bu kısım değişken
+        // Liste içeriği
         when {
             isLoading -> {
                 Box(
@@ -2252,7 +2284,6 @@ private fun ShipmentDialogs(
     when (dialog) {
         ShipmentDialog.None -> {}
         is ShipmentDialog.NewShipment -> {
-            val scroll = rememberScrollState()
             var consigneeMenuExpanded by remember { mutableStateOf(false) }
             var showDatePicker by remember { mutableStateOf(false) }
             val initialMillis = remember(dialog.draftDeliveryDate) {
@@ -2260,177 +2291,176 @@ private fun ShipmentDialogs(
             }
             val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
             val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
-            Box {
-                AlertDialog(
-                    onDismissRequest = { if (!dialog.isSubmitting) onDismiss() },
-                    title = { Text(localizedString(R.string.shipment_dialog_new_title, language)) },
-                    text = {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .verticalScroll(scroll)
-                        ) {
-                            if (dialog.isLoadingConsignees) {
-                                LinearProgressIndicator(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = PrimaryBlue,
-                                    trackColor = CardLine
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                            }
-                            dialog.consigneesLoadError?.let { key ->
-                                Text(
-                                    text = when (key) {
-                                        "session" -> localizedString(R.string.shipment_error_session, language)
-                                        else -> key
-                                    },
-                                    color = Color(0xFFDC2626),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                            }
-                            val consigneeFieldColors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PrimaryBlue,
-                                unfocusedBorderColor = CardLine,
-                                focusedLabelColor = PrimaryBlue,
-                                cursorColor = PrimaryBlue
-                            )
-                            ExposedDropdownMenuBox(
-                                expanded = consigneeMenuExpanded,
-                                onExpandedChange = { if (!dialog.isSubmitting) consigneeMenuExpanded = it },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                val selectedConsignee =
-                                    dialog.consignees.find { it.id == dialog.selectedConsigneeId }
-                                OutlinedTextField(
-                                    modifier = Modifier
-                                        .menuAnchor()
-                                        .fillMaxWidth(),
-                                    value = selectedConsignee?.name?.takeIf { it.isNotBlank() } ?: "",
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    enabled = !dialog.isSubmitting &&
-                                        !dialog.isLoadingConsignees &&
-                                        dialog.consignees.isNotEmpty(),
-                                    singleLine = true,
-                                    label = { Text(localizedString(R.string.shipment_brand_label, language)) },
-                                    placeholder = {
-                                        Text(localizedString(R.string.shipment_select_brand_placeholder, language))
-                                    },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = consigneeMenuExpanded)
-                                    },
-                                    shape = RoundedCornerShape(14.dp),
-                                    colors = consigneeFieldColors
-                                )
-                                DropdownMenu(
-                                    expanded = consigneeMenuExpanded,
-                                    onDismissRequest = { consigneeMenuExpanded = false }
-                                ) {
-                                    dialog.consignees.forEach { c ->
-                                        DropdownMenuItem(
-                                            text = { Text(c.name.ifBlank { "—" }) },
-                                            onClick = {
-                                                onNewShipmentSelectedConsigneeId(c.id)
-                                                consigneeMenuExpanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = dialog.draftName,
-                                onValueChange = onNewShipmentDraftName,
-                                enabled = !dialog.isSubmitting,
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(localizedString(R.string.shipment_name_label, language)) },
-                                singleLine = true
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = dialog.draftExpectedCount,
-                                onValueChange = { v ->
-                                    onNewShipmentDraftExpectedCount(v.filter { it.isDigit() }.take(9))
-                                },
-                                enabled = !dialog.isSubmitting,
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(localizedString(R.string.shipment_expected_count_label, language)) },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            OutlinedTextField(
-                                value = dialog.draftDeliveryDate,
-                                onValueChange = {},
-                                readOnly = true,
-                                enabled = !dialog.isSubmitting,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(enabled = !dialog.isSubmitting) { showDatePicker = true },
-                                label = { Text(localizedString(R.string.shipment_delivery_date_label, language)) },
-                                placeholder = { Text(localizedString(R.string.shipment_date_hint, language)) },
-                                trailingIcon = {
-                                    IconButton(
-                                        onClick = { showDatePicker = true },
-                                        enabled = !dialog.isSubmitting
-                                    ) {
-                                        Icon(Icons.Filled.Event, contentDescription = null, tint = PrimaryBlue)
-                                    }
-                                },
-                                singleLine = true
-                            )
-                        }
-                    },
+
+            val fieldColors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = PrimaryBlue,
+                unfocusedBorderColor = CardLine,
+                focusedLabelColor = PrimaryBlue,
+                cursorColor = PrimaryBlue,
+                focusedContainerColor = ScanStatBg.copy(alpha = 0.5f),
+                unfocusedContainerColor = ScanStatBg.copy(alpha = 0.3f),
+                disabledContainerColor = ScanStatBg.copy(alpha = 0.1f)
+            )
+
+            PremiumDialogContainer(
+                onDismissRequest = onDismiss,
+                title = localizedString(R.string.shipment_dialog_new_title, language),
+                isSubmitting = dialog.isSubmitting,
                 confirmButton = {
                     val canSubmitNew = !dialog.isSubmitting &&
                         !dialog.isLoadingConsignees &&
                         (dialog.selectedConsigneeId ?: 0) > 0
-                    TextButton(
+                    
+                    Button(
                         onClick = onConfirmNew,
-                        enabled = canSubmitNew
+                        enabled = canSubmitNew,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        modifier = Modifier.height(48.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            if (dialog.isSubmitting) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
-                                    strokeWidth = 2.dp,
-                                    color = PrimaryBlue
-                                )
-                            }
-                            Text(
-                                text = if (dialog.isSubmitting) {
-                                    localizedString(R.string.shipment_submitting, language)
-                                } else {
-                                    localizedString(R.string.shipment_confirm, language)
+                        if (dialog.isSubmitting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = Color.White
+                            )
+                            Spacer(Modifier.width(8.dp))
+                        }
+                        Text(
+                            text = if (dialog.isSubmitting) {
+                                localizedString(R.string.shipment_submitting, language)
+                            } else {
+                                localizedString(R.string.shipment_confirm, language)
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = onDismiss,
+                        enabled = !dialog.isSubmitting,
+                        modifier = Modifier.height(48.dp)
+                    ) {
+                        Text(
+                            text = localizedString(R.string.shipment_cancel, language),
+                            color = ExecutiveMuted,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            ) {
+                if (dialog.isLoadingConsignees) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth().height(2.dp),
+                        color = PrimaryBlue,
+                        trackColor = CardLine
+                    )
+                }
+
+                if (!dialog.consigneesLoadError.isNullOrBlank()) {
+                    Text(
+                        text = if (dialog.consigneesLoadError == "session") 
+                            localizedString(R.string.shipment_error_session, language)
+                            else dialog.consigneesLoadError,
+                        color = Color(0xFFDC2626),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                ExposedDropdownMenuBox(
+                    expanded = consigneeMenuExpanded,
+                    onExpandedChange = { if (!dialog.isSubmitting) consigneeMenuExpanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val selectedConsignee = dialog.consignees.find { it.id == dialog.selectedConsigneeId }
+                    OutlinedTextField(
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        value = selectedConsignee?.name?.takeIf { it.isNotBlank() } ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        enabled = !dialog.isSubmitting && !dialog.isLoadingConsignees && dialog.consignees.isNotEmpty(),
+                        singleLine = true,
+                        label = { Text(localizedString(R.string.shipment_brand_label, language)) },
+                        placeholder = { Text(localizedString(R.string.shipment_select_brand_placeholder, language)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = consigneeMenuExpanded) },
+                        shape = RoundedCornerShape(14.dp),
+                        colors = fieldColors
+                    )
+                    DropdownMenu(
+                        expanded = consigneeMenuExpanded,
+                        onDismissRequest = { consigneeMenuExpanded = false },
+                        modifier = Modifier.background(Color.White).border(1.dp, CardLine, RoundedCornerShape(8.dp))
+                    ) {
+                        dialog.consignees.forEach { c ->
+                            DropdownMenuItem(
+                                text = { Text(c.name.ifBlank { "—" }, style = MaterialTheme.typography.bodyLarge) },
+                                onClick = {
+                                    onNewShipmentSelectedConsigneeId(c.id)
+                                    consigneeMenuExpanded = false
                                 }
                             )
                         }
                     }
-                },
-                dismissButton = {
-                    TextButton(onClick = onDismiss, enabled = !dialog.isSubmitting) {
-                        Text(localizedString(R.string.shipment_cancel, language))
-                    }
                 }
+
+                OutlinedTextField(
+                    value = dialog.draftName,
+                    onValueChange = onNewShipmentDraftName,
+                    enabled = !dialog.isSubmitting,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(localizedString(R.string.shipment_name_label, language)) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = fieldColors
                 )
+
+                OutlinedTextField(
+                    value = dialog.draftExpectedCount,
+                    onValueChange = { v: String ->
+                        onNewShipmentDraftExpectedCount(v.filter { it.isDigit() }.take(9))
+                    },
+                    enabled = !dialog.isSubmitting,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(localizedString(R.string.shipment_expected_count_label, language)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = fieldColors
+                )
+
+                OutlinedTextField(
+                    value = dialog.draftDeliveryDate,
+                    onValueChange = {},
+                    readOnly = true,
+                    enabled = !dialog.isSubmitting,
+                    modifier = Modifier.fillMaxWidth().clickable(enabled = !dialog.isSubmitting) { showDatePicker = true },
+                    label = { Text(localizedString(R.string.shipment_delivery_date_label, language)) },
+                    placeholder = { Text(localizedString(R.string.shipment_date_hint, language)) },
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = true }, enabled = !dialog.isSubmitting) {
+                            Icon(Icons.Filled.Event, contentDescription = null, tint = PrimaryBlue)
+                        }
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = fieldColors
+                )
+
                 if (showDatePicker) {
                     DatePickerDialog(
                         onDismissRequest = { showDatePicker = false },
                         confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    datePickerState.selectedDateMillis?.let { ms ->
-                                        onNewShipmentDraftDeliveryDate(dateFormat.format(Date(ms)))
-                                    }
-                                    showDatePicker = false
+                            TextButton(onClick = {
+                                datePickerState.selectedDateMillis?.let { ms ->
+                                    onNewShipmentDraftDeliveryDate(dateFormat.format(Date(ms)))
                                 }
-                            ) {
-                                Text(localizedString(R.string.shipment_confirm, language))
+                                showDatePicker = false
+                            }) {
+                                Text(localizedString(R.string.shipment_confirm, language), fontWeight = FontWeight.Bold)
                             }
                         },
                         dismissButton = {
@@ -2539,110 +2569,111 @@ private fun ShipmentDialogs(
             }
             val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
             val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
+            
             val fieldColors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryBlue,
                 unfocusedBorderColor = CardLine,
                 focusedLabelColor = PrimaryBlue,
-                cursorColor = PrimaryBlue
+                cursorColor = PrimaryBlue,
+                focusedContainerColor = ScanStatBg.copy(alpha = 0.5f),
+                unfocusedContainerColor = ScanStatBg.copy(alpha = 0.3f),
+                disabledContainerColor = ScanStatBg.copy(alpha = 0.1f)
             )
-            Box {
-                AlertDialog(
-                    onDismissRequest = { if (!dialog.isSubmitting) onDismiss() },
-                    title = { Text(localizedString(R.string.shipment_edit_dialog_title, language)) },
-                    text = {
-                        val scroll = rememberScrollState()
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .verticalScroll(scroll),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            OutlinedTextField(
-                                value = dialog.draftName,
-                                onValueChange = onEditShipmentDraftName,
-                                enabled = !dialog.isSubmitting,
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(localizedString(R.string.shipment_name_label, language)) },
-                                singleLine = true,
-                                shape = RoundedCornerShape(14.dp),
-                                colors = fieldColors
+
+            PremiumDialogContainer(
+                onDismissRequest = onDismiss,
+                title = localizedString(R.string.shipment_edit_dialog_title, language),
+                isSubmitting = dialog.isSubmitting,
+                confirmButton = {
+                    Button(
+                        onClick = onConfirmEdit,
+                        enabled = !dialog.isSubmitting && dialog.draftName.isNotBlank(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        modifier = Modifier.height(48.dp)
+                    ) {
+                        if (dialog.isSubmitting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = Color.White
                             )
-                            OutlinedTextField(
-                                value = dialog.draftExpectedCount,
-                                onValueChange = { v ->
-                                    onEditShipmentDraftExpectedCount(v.filter { it.isDigit() }.take(9))
-                                },
-                                enabled = !dialog.isSubmitting,
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(localizedString(R.string.shipment_expected_count_label, language)) },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = fieldColors
-                            )
-                            OutlinedTextField(
-                                value = dialog.draftDeliveryDate,
-                                onValueChange = {},
-                                readOnly = true,
-                                enabled = !dialog.isSubmitting,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(enabled = !dialog.isSubmitting) { showDatePicker = true },
-                                label = { Text(localizedString(R.string.shipment_delivery_date_label, language)) },
-                                placeholder = { Text(localizedString(R.string.shipment_date_hint, language)) },
-                                trailingIcon = {
-                                    IconButton(
-                                        onClick = { showDatePicker = true },
-                                        enabled = !dialog.isSubmitting
-                                    ) {
-                                        Icon(Icons.Filled.Event, contentDescription = null, tint = PrimaryBlue)
-                                    }
-                                },
-                                singleLine = true,
-                                shape = RoundedCornerShape(14.dp),
-                                colors = fieldColors
-                            )
+                            Spacer(Modifier.width(8.dp))
                         }
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = onConfirmEdit,
-                            enabled = !dialog.isSubmitting && dialog.draftName.isNotBlank()
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                if (dialog.isSubmitting) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(18.dp),
-                                        strokeWidth = 2.dp,
-                                        color = PrimaryBlue
-                                    )
-                                }
-                                Text(localizedString(R.string.shipment_confirm, language))
-                            }
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = onDismiss, enabled = !dialog.isSubmitting) {
-                            Text(localizedString(R.string.shipment_cancel, language))
-                        }
+                        Text(
+                            text = localizedString(R.string.shipment_confirm, language),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = onDismiss,
+                        enabled = !dialog.isSubmitting,
+                        modifier = Modifier.height(48.dp)
+                    ) {
+                        Text(
+                            text = localizedString(R.string.shipment_cancel, language),
+                            color = ExecutiveMuted,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            ) {
+                OutlinedTextField(
+                    value = dialog.draftName,
+                    onValueChange = onEditShipmentDraftName,
+                    enabled = !dialog.isSubmitting,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(localizedString(R.string.shipment_name_label, language)) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = fieldColors
                 )
+                OutlinedTextField(
+                    value = dialog.draftExpectedCount,
+                    onValueChange = { v: String ->
+                        onEditShipmentDraftExpectedCount(v.filter { it.isDigit() }.take(9))
+                    },
+                    enabled = !dialog.isSubmitting,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(localizedString(R.string.shipment_expected_count_label, language)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = fieldColors
+                )
+                OutlinedTextField(
+                    value = dialog.draftDeliveryDate,
+                    onValueChange = {},
+                    readOnly = true,
+                    enabled = !dialog.isSubmitting,
+                    modifier = Modifier.fillMaxWidth().clickable(enabled = !dialog.isSubmitting) { showDatePicker = true },
+                    label = { Text(localizedString(R.string.shipment_delivery_date_label, language)) },
+                    placeholder = { Text(localizedString(R.string.shipment_date_hint, language)) },
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = true }, enabled = !dialog.isSubmitting) {
+                            Icon(Icons.Filled.Event, contentDescription = null, tint = PrimaryBlue)
+                        }
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = fieldColors
+                )
+
                 if (showDatePicker) {
                     DatePickerDialog(
                         onDismissRequest = { showDatePicker = false },
                         confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    datePickerState.selectedDateMillis?.let { ms ->
-                                        onEditShipmentDraftDeliveryDate(dateFormat.format(Date(ms)))
-                                    }
-                                    showDatePicker = false
+                            TextButton(onClick = {
+                                datePickerState.selectedDateMillis?.let { ms ->
+                                    onEditShipmentDraftDeliveryDate(dateFormat.format(Date(ms)))
                                 }
-                            ) {
-                                Text(localizedString(R.string.shipment_confirm, language))
+                                showDatePicker = false
+                            }) {
+                                Text(localizedString(R.string.shipment_confirm, language), fontWeight = FontWeight.Bold)
                             }
                         },
                         dismissButton = {
@@ -2653,6 +2684,82 @@ private fun ShipmentDialogs(
                     ) {
                         DatePicker(state = datePickerState)
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PremiumDialogContainer(
+    onDismissRequest: () -> Unit,
+    title: String,
+    confirmButton: @Composable () -> Unit,
+    dismissButton: @Composable () -> Unit,
+    isSubmitting: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Dialog(
+        onDismissRequest = { if (!isSubmitting) onDismissRequest() },
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .widthIn(max = 520.dp)
+                .padding(vertical = 24.dp)
+                .shadow(elevation = 20.dp, shape = RoundedCornerShape(28.dp)),
+            shape = RoundedCornerShape(28.dp),
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(5.dp)
+                            .height(28.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(PrimaryBlue)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = ExecutiveInk,
+                        letterSpacing = (-0.4).sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Content
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    content()
+                }
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                // Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    dismissButton()
+                    Spacer(modifier = Modifier.width(12.dp))
+                    confirmButton()
                 }
             }
         }

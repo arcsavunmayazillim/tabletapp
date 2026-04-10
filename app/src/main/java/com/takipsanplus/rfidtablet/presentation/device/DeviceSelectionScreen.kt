@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.takipsanplus.rfidtablet.R
 import com.takipsanplus.rfidtablet.presentation.common.AppLanguage
+import com.takipsanplus.rfidtablet.presentation.common.PremiumScreenBackdrop
 import com.takipsanplus.rfidtablet.presentation.common.localizedString
 import com.takipsanplus.rfidtablet.presentation.theme.PrimaryBlue
 
@@ -72,11 +73,12 @@ fun DeviceSelectionScreen(
     val isWide = LocalConfiguration.current.smallestScreenWidthDp >= 600
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DeviceBg),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
+        // Backdrop (Gradient)
+        PremiumScreenBackdrop()
+
         Image(
             painter = painterResource(id = R.drawable.bg_pat3),
             contentDescription = null,

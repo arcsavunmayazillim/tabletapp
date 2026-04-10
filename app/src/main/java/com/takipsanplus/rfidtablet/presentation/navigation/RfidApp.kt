@@ -150,6 +150,12 @@ fun RfidApp() {
                 HomeScreen(
                     language = uiState.selectedLanguage,
                     selectedDeviceName = selectedDevice,
+                    onBack = { navController.popBackStack() },
+                    onLogout = {
+                        navController.navigate(NavRoutes.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
                     onCountingClick = { navController.navigate(NavRoutes.COUNTING) },
                     onShipmentClick = { navController.navigate(NavRoutes.SHIPMENT) },
                     onSettingsClick = { navController.navigate(NavRoutes.SETTINGS) }

@@ -90,14 +90,16 @@ fun CountingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF3F4F9))
             .systemBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
+        // Backdrop (Gradient)
+        PremiumScreenBackdrop()
 
         if (isWide) {
             Row(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Column(
@@ -176,7 +178,9 @@ fun CountingScreen(
             }
         } else {
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

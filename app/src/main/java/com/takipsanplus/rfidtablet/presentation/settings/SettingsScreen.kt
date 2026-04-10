@@ -3,8 +3,8 @@
 package com.takipsanplus.rfidtablet.presentation.settings
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -57,13 +57,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -77,7 +77,6 @@ import com.takipsanplus.rfidtablet.data.local.UserPreferences
 import com.takipsanplus.rfidtablet.presentation.common.AppLanguage
 import com.takipsanplus.rfidtablet.presentation.common.PremiumScreenBackdrop
 import com.takipsanplus.rfidtablet.presentation.common.localizedString
-import com.takipsanplus.rfidtablet.presentation.theme.AccentCyan
 import com.takipsanplus.rfidtablet.presentation.theme.ExecutiveInk
 import com.takipsanplus.rfidtablet.presentation.theme.ExecutiveMuted
 import com.takipsanplus.rfidtablet.presentation.theme.LiveEmerald
@@ -107,10 +106,12 @@ fun SettingsScreen(
         BluetoothConnectionController.init(context)
     }
 
-    val bluetoothAdapter = remember { BluetoothAdapter.getDefaultAdapter() }
+    val bluetoothAdapter = remember { 
+        context.getSystemService(BluetoothManager::class.java)?.adapter 
+    }
 
     var bondedDevices by remember { mutableStateOf(emptyList<BluetoothDevice>()) }
-    var selectedDeviceAddress by remember { mutableStateOf<String?>(userPrefs.getSelectedBluetoothDeviceAddress()) }
+    var selectedDeviceAddress by remember { mutableStateOf(userPrefs.getSelectedBluetoothDeviceAddress()) }
 
     val connectionState by BluetoothConnectionController.state.collectAsState()
 
@@ -148,12 +149,12 @@ fun SettingsScreen(
 
     val selectedDevice = bondedDevices.firstOrNull { it.address == selectedDeviceAddress }
 
-    var ant1 by remember { mutableStateOf(storedReaderSettings.ant1) }
-    var ant2 by remember { mutableStateOf(storedReaderSettings.ant2) }
-    var ant3 by remember { mutableStateOf(storedReaderSettings.ant3) }
-    var ant4 by remember { mutableStateOf(storedReaderSettings.ant4) }
+    var ant1 by remember { mutableIntStateOf(storedReaderSettings.ant1) }
+    var ant2 by remember { mutableIntStateOf(storedReaderSettings.ant2) }
+    var ant3 by remember { mutableIntStateOf(storedReaderSettings.ant3) }
+    var ant4 by remember { mutableIntStateOf(storedReaderSettings.ant4) }
 
-    var packCloseTimeout by remember { mutableStateOf(storedReaderSettings.packetCloseTimeout) }
+    var packCloseTimeout by remember { mutableIntStateOf(storedReaderSettings.packetCloseTimeout) }
 
     var weightEnabled by remember { mutableStateOf(storedReaderSettings.weightEnabled) }
     var barcodeEnabled by remember { mutableStateOf(storedReaderSettings.barcodeEnabled) }
@@ -164,9 +165,7 @@ fun SettingsScreen(
     val scroll = rememberScrollState()
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 10.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
         PremiumScreenBackdrop(Modifier.fillMaxSize())
 
@@ -174,7 +173,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scroll)
-                .padding(horizontal = 4.dp)
+                .padding(horizontal = 20.dp, vertical = 10.dp)
         ) {
             SettingsHeroHeader(language = language, onBack = onBack)
 
@@ -244,19 +243,40 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(modifier = Modifier.weight(1f)) {
+                val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+                val isWide = configuration.smallestScreenWidthDp >= 600
+
+                if (isWide) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            SettingsToggleRow(
+                                label = localizedString(R.string.weight_enabled, language),
+                                checked = weightEnabled,
+                                onCheckedChange = { weightEnabled = it }
+                            )
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            SettingsToggleRow(
+                                label = localizedString(R.string.barcode_enabled, language),
+                                checked = barcodeEnabled,
+                                onCheckedChange = { barcodeEnabled = it }
+                            )
+                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
                         SettingsToggleRow(
                             label = localizedString(R.string.weight_enabled, language),
                             checked = weightEnabled,
                             onCheckedChange = { weightEnabled = it }
                         )
-                    }
-                    Box(modifier = Modifier.weight(1f)) {
                         SettingsToggleRow(
                             label = localizedString(R.string.barcode_enabled, language),
                             checked = barcodeEnabled,
@@ -333,30 +353,15 @@ private fun SettingsHeroHeader(language: AppLanguage, onBack: () -> Unit) {
                 tint = ExecutiveInk
             )
         }
-        Box(
-            modifier = Modifier
-                .width(4.dp)
-                .height(32.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(Brush.verticalGradient(listOf(PrimaryBlue, AccentCyan)))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = localizedString(R.string.settings_title, language),
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = (-0.3).sp
+            ),
+            color = ExecutiveInk
         )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column {
-            Text(
-                text = localizedString(R.string.settings_title, language),
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = (-0.3).sp
-                ),
-                color = ExecutiveInk
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = localizedString(R.string.module_settings_subtitle, language),
-                style = MaterialTheme.typography.bodyMedium,
-                color = ExecutiveMuted
-            )
-        }
     }
 }
 
@@ -563,11 +568,17 @@ private fun ConnectionSection(
             modifier = Modifier.weight(1f)
         ) {
             val selected = bondedDevices.firstOrNull { it.address == selectedDeviceAddress }
+            val deviceName = try {
+                if (bluetoothPermissionGranted) selected?.name else null
+            } catch (_: SecurityException) {
+                null
+            }
+
             OutlinedTextField(
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth(),
-                value = selected?.name ?: localizedString(R.string.bluetooth_select_device, language),
+                value = deviceName ?: localizedString(R.string.bluetooth_select_device, language),
                 onValueChange = {},
                 readOnly = true,
                 singleLine = true,
@@ -588,10 +599,17 @@ private fun ConnectionSection(
                 onDismissRequest = { expanded = false }
             ) {
                 bondedDevices.forEach { device ->
+                    val name = try {
+                        if (bluetoothPermissionGranted) device.name else "Bluetooth"
+                    } catch (_: SecurityException) {
+                        "Bluetooth"
+                    }
+                    val address = device.address ?: ""
+
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = "${device.name ?: "Bluetooth"}  ·  ${device.address ?: ""}",
+                                text = "$name  ·  $address",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         },
@@ -740,7 +758,7 @@ private fun AntennaPowerSelector(
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+        onExpandedChange = { expanded = it }
     ) {
         OutlinedTextField(
             modifier = Modifier
@@ -748,7 +766,7 @@ private fun AntennaPowerSelector(
                 .fillMaxWidth()
                 .heightIn(min = 62.dp),
             value = value.toString(),
-            onValueChange = {},
+            onValueChange = { _ -> },
             readOnly = true,
             singleLine = true,
             label = { Text(text = localizedString(titleResId, language), maxLines = 1) },
@@ -790,7 +808,7 @@ private fun PacketCloseTimeSelector(
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+        onExpandedChange = { expanded = it }
     ) {
         OutlinedTextField(
             modifier = Modifier
@@ -798,7 +816,7 @@ private fun PacketCloseTimeSelector(
                 .fillMaxWidth()
                 .heightIn(min = 62.dp),
             value = value.toString(),
-            onValueChange = {},
+            onValueChange = { _ -> },
             readOnly = true,
             singleLine = true,
             label = { Text(text = localizedString(R.string.packet_close_time, language), maxLines = 1) },
