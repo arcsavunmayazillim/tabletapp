@@ -1,0 +1,37 @@
+# Built artifacts
+bin/
+gen/
+out/
+build/
+.gradle/
+.navigation/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+.shelf/
+
+# Local configuration
+local.properties
+.DS_Store
+
+# Captures / Logs
+captures/
+*.log
+
+# Keystores (keep them private!)
+*.jks
+*.keystore
+*.p12
+
+# Gradle
+.gradle/
+build/
+
+# Android
+app/build/
+
+# Kotlin
+*.kotlin_module
