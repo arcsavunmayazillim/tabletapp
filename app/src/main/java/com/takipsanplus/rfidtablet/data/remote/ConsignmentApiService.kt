@@ -6,6 +6,7 @@ import com.takipsanplus.rfidtablet.data.model.consignment.CloseConsignmentRespon
 import com.takipsanplus.rfidtablet.data.model.consignment.ConsigneesResponseModel
 import com.takipsanplus.rfidtablet.data.model.consignment.ConsignmentResponseModel
 import com.takipsanplus.rfidtablet.data.model.consignment.ShipmentTotalResponse
+import com.takipsanplus.rfidtablet.data.model.consignment.UpdateConsignmentRequestModel
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -56,4 +57,12 @@ interface ConsignmentApiService {
         @Query("companyID") companyId: Int,
         @Body body: AddConsignmentZaraRequestModel
     ): Response<AddConsigmentResponseModel>
+
+    @POST("read/consignmentUpdate")
+    suspend fun updateConsignment(
+        @Header("Authorization") authorization: String? = null,
+        @Header("token") token: String? = null,
+        @Query("token") tokenQuery: String? = null,
+        @Body body: UpdateConsignmentRequestModel
+    ): Response<ConsignmentResponseModel>
 }

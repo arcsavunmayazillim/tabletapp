@@ -267,4 +267,66 @@ class ConsignmentRepositoryImpl(
             }
         }
     }
+
+    private suspend fun requestUpdateConsignmentWithFallback(
+        token: String,
+        body: com.takipsanplus.rfidtablet.data.model.consignment.UpdateConsignmentRequestModel
+    ): Response<com.takipsanplus.rfidtablet.data.model.consignment.ConsignmentResponseModel> {
+        val normalizedToken = normalizeToken(token)
+        var last = api.updateConsignment(
+            authorization = normalizedToken,
+            body = body
+        )
+        if (last.isSuccessful && isSuccessStatus(last.body()?.status)) return last
+
+        last = api.updateConsignment(
+            authorization = "Bearer $normalizedToken",
+            body = body
+        )
+        if (last.isSuccessful && isSuccessStatus(last.body()?.status)) return last
+
+        last = api.updateConsignment(
+            token = normalizedToken,
+            body = body
+        )
+        if (last.isSuccessful && isSuccessStatus(last.body()?.status)) return last
+
+        last = api.updateConsignment(
+            tokenQuery = normalizedToken,
+            body = body
+        )
+        return last
+    }
+
+    override suspend fun updateConsignment(
+        token: String,
+        body: com.takipsanplus.rfidtablet.data.model.consignment.UpdateConsignmentRequestModel
+    ): Result<Unit> {
+        return runCatching {
+            val resolved = requestUpdateConsignmentWithFallback(token, body)
+            if (resolved.isSuccessful) {
+                val b = resolved.body()
+                if (b != null && b.status.equals("success", ignoreCase = true)) {
+                    Unit
+                } else {
+                    throw IllegalStateException(b?.errorMessage?.takeIf { it.isNotBlank() } ?: "Update consignment failed")
+                }
+            } else {
+                val raw = try {
+                    resolved.errorBody()?.string()?.trim()?.take(500)
+                } catch (_: Exception) {
+                    null
+                }
+                throw IllegalStateException(
+                    buildString {
+                        append("HTTP ${resolved.code()}")
+                        if (!raw.isNullOrBlank()) {
+                            append(" — ")
+                            append(raw)
+                        }
+                    }
+                )
+            }
+        }
+    }
 }

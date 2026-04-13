@@ -610,20 +610,56 @@ class ShipmentViewModel(
         if (d.isSubmitting) return
         val sid = _state.value.selectedShipmentId ?: return
         val existing = shipmentStore[sid] ?: return
+        val existingConsignmentId = existing.consignmentRemoteId
+        
+        if (existingConsignmentId <= 0) {
+            _state.update { it.copy(shipmentError = "local_edit_error") }
+            return
+        }
+
         val name = d.draftName.trim()
-        val expected = d.draftExpectedCount.trim().toIntOrNull() ?: existing.expectedItemCount
+        val expectedStr = d.draftExpectedCount.trim()
+        val expected = expectedStr.toIntOrNull() ?: existing.expectedItemCount
         val date = d.draftDeliveryDate.trim().ifBlank { existing.createdAtLabel }
         if (name.isBlank()) {
             _state.update { it.copy(shipmentError = "validation") }
             return
         }
-        val updated = existing.copy(name = name, expectedItemCount = expected, createdAtLabel = date)
-        shipmentStore[sid] = updated
-        _state.update { st ->
-            st.copy(
-                dialog = ShipmentDialog.None,
-                shipments = st.shipments.map { if (it.id == sid) updated else it }
+
+        _state.update { it.copy(dialog = d.copy(isSubmitting = true)) }
+
+        val model = com.takipsanplus.rfidtablet.data.model.consignment.UpdateConsignmentRequestModel(
+            dataList = com.takipsanplus.rfidtablet.data.model.consignment.UpdateConsignmentDataList(
+                id = existingConsignmentId,
+                countryCode = "",
+                deliveryDate = date,
+                itemCount = expectedStr,
+                plateNo = name
             )
+        )
+
+        viewModelScope.launch {
+            val token = userPreferences.getSessionToken().orEmpty()
+            consignmentRepository.updateConsignment(token, model)
+                .onSuccess {
+                    val updated = existing.copy(name = name, expectedItemCount = expected, createdAtLabel = date)
+                    shipmentStore[sid] = updated
+                    _state.update { st ->
+                        st.copy(
+                            dialog = ShipmentDialog.None,
+                            shipments = st.shipments.map { if (it.id == sid) updated else it }
+                        )
+                    }
+                    refreshConsignments()
+                }
+                .onFailure { e ->
+                    _state.update {
+                        it.copy(
+                            dialog = d.copy(isSubmitting = false),
+                            shipmentError = e.message ?: "update_failed"
+                        )
+                    }
+                }
         }
     }
 

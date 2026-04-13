@@ -163,6 +163,7 @@
     <string name="shipment_date_hint">yyyy-MM-dd</string>
     <string name="shipment_error_session">Sign in again to load shipments.</string>
     <string name="shipment_error_new_validation">Select a brand, enter shipment name, a positive expected quantity, and delivery date.</string>
+    <string name="shipment_error_local_edit">Cannot edit a local shipment before it is sent to the server.</string>
     <string name="shipment_retry">Retry</string>
     <string name="shipment_list_empty">No shipments yet. Create one with New shipment.</string>
     <string name="shipment_submitting">Submitting…</string>

@@ -18,4 +18,6 @@ interface ConsignmentRepository {
     ): Result<Unit>
 
     suspend fun closeConsignment(token: String, companyId: Int, consignmentId: Int): Result<Unit>
+    
+    suspend fun updateConsignment(token: String, body: com.takipsanplus.rfidtablet.data.model.consignment.UpdateConsignmentRequestModel): Result<Unit>
 }

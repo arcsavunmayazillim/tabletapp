@@ -7,6 +7,23 @@ data class AddConsignmentZaraRequestModel(
     val dataList: ZaraDataList
 )
 
+/** POST read/consignmentUpdate — Sevkiyat düzenleme isteği. */
+data class UpdateConsignmentRequestModel(
+    val dataList: UpdateConsignmentDataList
+)
+
+data class UpdateConsignmentDataList(
+    val id: Int,
+    @SerializedName("country_code")
+    val countryCode: String = "",
+    @SerializedName("delivery_date")
+    val deliveryDate: String,
+    @SerializedName("item_count")
+    val itemCount: String,
+    @SerializedName("plate_no")
+    val plateNo: String = ""
+)
+
 /**
  * Backend hem `consignee` hem `consignee_id` okuyabiliyor; eksik anahtar PHP'de $consignee atanmamasına yol açabiliyor.
  * Değer, `read/consignees` listesinden seçilen marka (alıcı) kaydının `id`'sidir.

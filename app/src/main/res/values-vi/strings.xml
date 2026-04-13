@@ -159,6 +159,7 @@
     <string name="shipment_date_hint">yyyy-MM-dd</string>
     <string name="shipment_error_session">Dang nhap lai de tai danh sach.</string>
     <string name="shipment_error_new_validation">Chon thuong hieu, nhap ten, so luong duong va ngay.</string>
+    <string name="shipment_error_local_edit">Khong the chinh sua lo hang cuc bo truoc khi no duoc gui den may chu.</string>
     <string name="shipment_retry">Thu lai</string>
     <string name="shipment_list_empty">Chua co van chuyen. Tao moi.</string>
     <string name="shipment_submitting">Dang gui…</string>
@@ -171,4 +172,10 @@
     <string name="shipment_confirm">Xac nhan</string>
     <string name="shipment_cancel">Huy</string>
     <string name="shipment_edit_dialog_title">Chinh sua lo hang</string>
+    <string name="shipment_status_active">Hoat dong</string>
+    <string name="shipment_status_passive">Thu dong</string>
+    <string name="shipment_rotate_hint">Vui long xoay thiet bi cua ban</string>
+    <string name="shipment_open_reading_action">Tien hanh</string>
+    <string name="back_action">Quay lai</string>
+    <string name="logout_action">Dang xuat</string>
 </resources>

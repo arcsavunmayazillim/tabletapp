@@ -159,6 +159,7 @@
     <string name="shipment_date_hint">aaaa-MM-dd</string>
     <string name="shipment_error_session">Inicie sesion de nuevo para cargar envios.</string>
     <string name="shipment_error_new_validation">Seleccione marca, nombre, cantidad positiva y fecha.</string>
+    <string name="shipment_error_local_edit">No se puede editar un envío local antes de enviarlo al servidor.</string>
     <string name="shipment_retry">Reintentar</string>
     <string name="shipment_list_empty">Sin envios. Cree uno nuevo.</string>
     <string name="shipment_submitting">Enviando…</string>
@@ -171,4 +172,10 @@
     <string name="shipment_confirm">Confirmar</string>
     <string name="shipment_cancel">Cancelar</string>
     <string name="shipment_edit_dialog_title">Editar Envio</string>
+    <string name="shipment_status_active">Activo</string>
+    <string name="shipment_status_passive">Pasivo</string>
+    <string name="shipment_rotate_hint">Por favor, rote su dispositivo</string>
+    <string name="shipment_open_reading_action">Proceder</string>
+    <string name="back_action">Volver</string>
+    <string name="logout_action">Cerrar sesion</string>
 </resources>

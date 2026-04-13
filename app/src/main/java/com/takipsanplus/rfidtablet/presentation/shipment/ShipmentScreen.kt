@@ -2257,6 +2257,7 @@ private fun ShipmentApiMessageDialog(
     val errText = when (err) {
         "validation" -> localizedString(R.string.shipment_error_new_validation, language)
         "session" -> localizedString(R.string.shipment_error_session, language)
+        "local_edit_error" -> localizedString(R.string.shipment_error_local_edit, language)
         else -> err
     }
     AlertDialog(

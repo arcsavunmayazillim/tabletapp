@@ -159,6 +159,7 @@
     <string name="shipment_date_hint">aaaa-MM-jj</string>
     <string name="shipment_error_session">Reconnectez-vous pour charger les expeditions.</string>
     <string name="shipment_error_new_validation">Choisissez une marque, le nom, une quantite positive et la date.</string>
+    <string name="shipment_error_local_edit">Impossible de modifier une expedition locale avant son envoi au serveur.</string>
     <string name="shipment_retry">Reessayer</string>
     <string name="shipment_list_empty">Aucune expedition. Creez-en une.</string>
     <string name="shipment_submitting">Envoi…</string>
@@ -171,4 +172,10 @@
     <string name="shipment_confirm">Confirmer</string>
     <string name="shipment_cancel">Annuler</string>
     <string name="shipment_edit_dialog_title">Modifier l\'expedition</string>
+    <string name="shipment_status_active">Actif</string>
+    <string name="shipment_status_passive">Passif</string>
+    <string name="shipment_rotate_hint">Veuillez faire pivoter votre appareil</string>
+    <string name="shipment_open_reading_action">Proceder</string>
+    <string name="back_action">Retour</string>
+    <string name="logout_action">Deconnexion</string>
 </resources>
