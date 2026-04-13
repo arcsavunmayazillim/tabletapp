@@ -90,6 +90,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.text.KeyboardOptions
@@ -331,6 +332,10 @@ fun ShipmentScreen(
             }
         } else {
             if (!phoneDetailVisible || selected == null) {
+                if (!isBluetoothConnected) {
+                    DisconnectedBadge()
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
                 ShipmentListPane(
                     language = language,
                     shipments = uiState.shipments,
@@ -345,13 +350,13 @@ fun ShipmentScreen(
                     onEditShipment = onShowEditShipment,
                     onCloseConsignment = onShowCloseConsignment,
                     canCloseConsignment = canCloseConsignment,
-                    isScanning = false,
-                    currentBatchEpcCount = 0,
-                    isSubmittingBatch = false,
+                    isScanning = uiState.isScanning,
+                    currentBatchEpcCount = uiState.currentBatchEpcCount,
+                    isSubmittingBatch = uiState.isSubmittingBatch,
                     onToggleScan = onToggleScan,
-                    scanStartEnabled = false,
-                    canFindPackage = false,
-                    isFindPackageLookupActive = false,
+                    scanStartEnabled = scanStartEnabled,
+                    canFindPackage = canScan,
+                    isFindPackageLookupActive = uiState.isFindPackageLookupActive,
                     onFindPackageByTag = onFindPackageByTag,
                     showScanRow = false,
                     modifier = Modifier
@@ -2776,5 +2781,37 @@ private fun parseShipmentDateToMillis(ymd: String): Long? {
         SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(ymd.trim())?.time
     } catch (_: Exception) {
         null
+    }
+}
+@Composable
+fun DisconnectedBadge() {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(RoundedCornerShape(100.dp))
+                .background(Color(0xFFFEE2E2))
+                .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.35f), RoundedCornerShape(100.dp))
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFEF4444))
+                )
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = "Bluetooth Bağlı Değil",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFB91C1C),
+                letterSpacing = 0.3.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
