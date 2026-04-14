@@ -304,6 +304,11 @@ fun ShipmentScreen(
                     isFindPackageLookupActive = uiState.isFindPackageLookupActive,
                     onFindPackageByTag = onFindPackageByTag,
                     showActionIcons = true,
+                    headerRightContent = {
+                        if (!isBluetoothConnected) {
+                            DisconnectedBadge(language)
+                        }
+                    },
                     modifier = Modifier
                         .weight(0.36f)
                         .fillMaxHeight()
@@ -332,10 +337,6 @@ fun ShipmentScreen(
             }
         } else {
             if (!phoneDetailVisible || selected == null) {
-                if (!isBluetoothConnected) {
-                    DisconnectedBadge()
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
                 ShipmentListPane(
                     language = language,
                     shipments = uiState.shipments,
@@ -359,6 +360,11 @@ fun ShipmentScreen(
                     isFindPackageLookupActive = uiState.isFindPackageLookupActive,
                     onFindPackageByTag = onFindPackageByTag,
                     showScanRow = false,
+                    headerRightContent = {
+                        if (!isBluetoothConnected) {
+                            DisconnectedBadge(language)
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -745,6 +751,7 @@ private fun ShipmentListPane(
     onFindPackageByTag: () -> Unit,
     showScanRow: Boolean = true,
     showActionIcons: Boolean = false,
+    headerRightContent: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -773,6 +780,9 @@ private fun ShipmentListPane(
                 color = ExecutiveInk,
                 modifier = Modifier.weight(1f)
             )
+            if (headerRightContent != null) {
+                headerRightContent()
+            }
         }
         Spacer(modifier = Modifier.height(10.dp))
         listLoadErrorKey?.let { key ->
@@ -2785,7 +2795,7 @@ private fun parseShipmentDateToMillis(ymd: String): Long? {
     }
 }
 @Composable
-fun DisconnectedBadge() {
+fun DisconnectedBadge(language: AppLanguage) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -2805,12 +2815,13 @@ fun DisconnectedBadge() {
             }
             Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = "Bluetooth Bağlı Değil",
+                text = localizedString(R.string.bt_not_connected, language).replaceFirst(" ", "\n"),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFB91C1C),
                 letterSpacing = 0.3.sp,
-                maxLines = 1,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         }

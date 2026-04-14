@@ -141,7 +141,7 @@ fun CountingScreen(
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     if (!uiState.isDeviceConnected && uiState.showDisconnectedWarning) {
-                        DisconnectedBadge()
+                        DisconnectedBadge(language)
                         Spacer(modifier = Modifier.height(12.dp))
                     } else if (uiState.isReading) {
                         LiveReadingBadge(language = language)
@@ -207,7 +207,7 @@ fun CountingScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     if (!uiState.isDeviceConnected && uiState.showDisconnectedWarning) {
-                        DisconnectedBadge()
+                        DisconnectedBadge(language)
                     } else if (uiState.isReading) {
                         LiveReadingBadge(language = language)
                     }
@@ -691,7 +691,7 @@ private fun EpcRowCard(epc: String, index: Int) {
 }
 
 @Composable
-fun DisconnectedBadge() {
+fun DisconnectedBadge(language: AppLanguage) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -711,12 +711,13 @@ fun DisconnectedBadge() {
             }
             Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = "Bluetooth Bağlı Değil",
+                text = localizedString(com.takipsanplus.rfidtablet.R.string.bt_not_connected, language).replaceFirst(" ", "\n"),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = Color(0xFFB91C1C),
                 letterSpacing = 0.3.sp,
-                maxLines = 1,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
