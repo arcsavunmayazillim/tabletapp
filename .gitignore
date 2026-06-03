@@ -17,6 +17,9 @@ build/
 local.properties
 .DS_Store
 
+# Claude Code local settings (machine-specific, not project code)
+.claude/settings.local.json
+
 # Captures / Logs
 captures/
 *.log
