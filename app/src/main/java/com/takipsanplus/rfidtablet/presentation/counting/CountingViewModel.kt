@@ -3,9 +3,11 @@ package com.takipsanplus.rfidtablet.presentation.counting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionController
+import com.takipsanplus.rfidtablet.data.network.BridgePlusConnectionController
+import com.takipsanplus.rfidtablet.data.network.DeviceConnectionState
 import com.takipsanplus.rfidtablet.data.local.UserPreferences
 import android.util.Log
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,32 +26,15 @@ class CountingViewModel(
 
     private val uniqueSet = LinkedHashSet<String>()
 
-    private val weightEnabled: Boolean by lazy {
-        val stored = userPreferences.getReaderSettings(
-            default = UserPreferences.ReaderSettings(
-                ant1 = 0,
-                ant2 = 0,
-                ant3 = 0,
-                ant4 = 0,
-                packetCloseTimeout = 5,
-                weightEnabled = true,
-                barcodeEnabled = false
-            )
-        )
-        stored.weightEnabled
-    }
-
     init {
-        // Collect bluetooth state
         viewModelScope.launch {
-            BluetoothConnectionController.state.collectLatest { state ->
-                val isConnected = state is com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionState.Connected
-                _uiState.update { 
+            BridgePlusConnectionController.state.collectLatest { state ->
+                val isConnected = state is DeviceConnectionState.Connected
+                _uiState.update {
                     it.copy(
                         isDeviceConnected = isConnected,
-                        // hide the warning automatically if we establish a connection
                         showDisconnectedWarning = if (isConnected) false else it.showDisconnectedWarning
-                    ) 
+                    )
                 }
                 if (!isConnected && _uiState.value.isReading) {
                     stopReading()
@@ -57,13 +42,12 @@ class CountingViewModel(
             }
         }
 
-        // Collect EPCs from bluetooth and add them only while reading.
         viewModelScope.launch {
-            BluetoothConnectionController.epcEvents.collectLatest { epc ->
+            BridgePlusConnectionController.epcEvents.collect { epc ->
                 val reading = _uiState.value.isReading
-                if (!reading) return@collectLatest
+                if (!reading) return@collect
                 val normalized = epc.trim()
-                if (normalized.isBlank()) return@collectLatest
+                if (normalized.isBlank()) return@collect
 
                 if (uniqueSet.add(normalized)) {
                     Log.d(TAG, "Unique EPC added: $normalized (count=${uniqueSet.size})")
@@ -95,22 +79,27 @@ class CountingViewModel(
     }
 
     private fun startReading() {
-        val weightFlag = if (weightEnabled) "1" else "0"
         _uiState.update { it.copy(isReading = true) }
-        BluetoothConnectionController.sendCommand("""{"Status":["Start","$weightFlag"]}""")
+        BridgePlusConnectionController.startScan()
     }
 
     private fun stopReading() {
         _uiState.update { it.copy(isReading = false) }
-        BluetoothConnectionController.sendCommand("""{"Status":["Stop"]}""")
+        BridgePlusConnectionController.stopScan()
     }
 
     fun onClearClicked() {
-        // Stop first (if running), then clear UI.
-        _uiState.update { it.copy(isReading = false) }
-        BluetoothConnectionController.sendCommand("""{"Status":["Stop"]}""")
+        BridgePlusConnectionController.stopScan()
         uniqueSet.clear()
-        _uiState.update { it.copy(uniqueEpcs = emptyList(), uniqueCount = 0) }
+        _uiState.update { it.copy(isReading = false, uniqueEpcs = emptyList(), uniqueCount = 0) }
+    }
+
+    override fun onCleared() {
+        // Ekrandan çıkılırken (back tuşu dahil) tarama durdurulur
+        if (_uiState.value.isReading) {
+            BridgePlusConnectionController.stopScan()
+        }
+        super.onCleared()
     }
 
     class Factory(

@@ -47,6 +47,14 @@
     <string name="stop_action">Durdur</string>
     <string name="clear_action">Temizle</string>
     <string name="settings_title">Ayarlar</string>
+    <string name="connection_title">Cihaz Bağlantısı</string>
+    <string name="connection_mode_websocket">WebSocket</string>
+    <string name="connection_mode_ble">Bluetooth LE</string>
+    <string name="device_ip_label">IP Adresi</string>
+    <string name="ble_scan">Cihaz Tara</string>
+    <string name="ble_preparing">Cihaz BLE moduna geçiyor…</string>
+    <string name="ble_scanning">Taranıyor…</string>
+    <string name="ble_no_devices">BLE cihazı bulunamadı. Tara\'ya basın.</string>
     <string name="bluetooth_connection_title">Bluetooth Bağlantısı</string>
     <string name="bluetooth_no_bonded_devices">Eşleşmiş Bluetooth cihaz bulunamadı.</string>
     <string name="bluetooth_select_device">Cihaz Seç</string>

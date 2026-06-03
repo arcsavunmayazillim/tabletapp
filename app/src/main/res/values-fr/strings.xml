@@ -47,6 +47,14 @@
     <string name="stop_action">Arreter</string>
     <string name="clear_action">Effacer</string>
     <string name="settings_title">Parametres</string>
+    <string name="connection_title">Connexion de l appareil</string>
+    <string name="connection_mode_websocket">WebSocket</string>
+    <string name="connection_mode_ble">Bluetooth LE</string>
+    <string name="device_ip_label">Adresse IP</string>
+    <string name="ble_scan">Rechercher des appareils</string>
+    <string name="ble_preparing">Passage en mode BLE…</string>
+    <string name="ble_scanning">Recherche…</string>
+    <string name="ble_no_devices">Aucun appareil BLE trouve. Appuyez sur Rechercher.</string>
     <string name="bluetooth_connection_title">Connexion Bluetooth</string>
     <string name="bluetooth_no_bonded_devices">Aucun appareil Bluetooth apparie.</string>
     <string name="bluetooth_select_device">Selectionner un appareil</string>

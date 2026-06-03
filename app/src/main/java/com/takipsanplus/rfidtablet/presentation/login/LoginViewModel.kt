@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.takipsanplus.rfidtablet.data.local.UserPreferences
 import com.takipsanplus.rfidtablet.R
-import com.takipsanplus.rfidtablet.domain.usecase.GetUserInfoUseCase
 import com.takipsanplus.rfidtablet.domain.usecase.LoginUseCase
 import com.takipsanplus.rfidtablet.presentation.common.AppLanguage
 import com.takipsanplus.rfidtablet.presentation.common.UiMessage
@@ -19,7 +18,6 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val loginUseCase: LoginUseCase,
-    private val getUserInfoUseCase: GetUserInfoUseCase,
     private val userPreferences: UserPreferences
 ) : ViewModel() {
 
@@ -79,34 +77,19 @@ class LoginViewModel(
                     _messages.emit(UiMessage.Resource(R.string.error_token_empty))
                     return@onSuccess
                 }
-                getUserInfoUseCase(token)
-                    .onSuccess { userInfo ->
-                        val companyId = userInfo.data?.companyId
-                        if (companyId != null) {
-                            userPreferences.saveSession(token, companyId)
-                        }
-                        if (state.rememberMe) {
-                            userPreferences.saveRememberedCredentials(
-                                username = state.username.trim(),
-                                password = state.password
-                            )
-                        } else {
-                            userPreferences.clearRememberedCredentials()
-                        }
-                        _uiState.update { current ->
-                            current.copy(isLoading = false, token = token)
-                        }
-                    }
-                    .onFailure { throwable ->
-                        _uiState.update { current -> current.copy(isLoading = false) }
-                        _messages.emit(
-                            if (throwable.message.isNullOrBlank()) {
-                                UiMessage.Resource(R.string.error_invalid_token)
-                            } else {
-                                UiMessage.Text(throwable.message!!)
-                            }
-                        )
-                    }
+                // Remember me kaydetme — getUserInfo gerekmez, token yeterli.
+                if (state.rememberMe) {
+                    userPreferences.saveRememberedCredentials(
+                        username = state.username.trim(),
+                        password = state.password
+                    )
+                } else {
+                    userPreferences.clearRememberedCredentials()
+                }
+                // DeviceSelectionViewModel getUserInfo + saveSession işini zaten yapıyor.
+                _uiState.update { current ->
+                    current.copy(isLoading = false, token = token)
+                }
             }.onFailure { throwable ->
                 _uiState.update {
                     it.copy(
@@ -130,12 +113,11 @@ class LoginViewModel(
 
     class Factory(
         private val loginUseCase: LoginUseCase,
-        private val getUserInfoUseCase: GetUserInfoUseCase,
         private val userPreferences: UserPreferences
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return LoginViewModel(loginUseCase, getUserInfoUseCase, userPreferences) as T
+            return LoginViewModel(loginUseCase, userPreferences) as T
         }
     }
 }

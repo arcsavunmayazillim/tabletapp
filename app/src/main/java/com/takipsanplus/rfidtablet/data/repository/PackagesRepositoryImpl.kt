@@ -173,7 +173,6 @@ class PackagesRepositoryImpl(
                     throw IllegalStateException("Packages request failed")
                 }
                 val rows = body.data
-                // Sunucu bazen boş listeyle status!=success veya "paket yok" mesajı döner; bu geçerli durumdur (ör. son paket silindikten sonra).
                 if (rows.isEmpty()) {
                     return@runCatching emptyList()
                 }

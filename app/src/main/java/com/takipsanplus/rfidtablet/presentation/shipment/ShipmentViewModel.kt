@@ -3,8 +3,8 @@ package com.takipsanplus.rfidtablet.presentation.shipment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionController
-import com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionState
+import com.takipsanplus.rfidtablet.data.network.BridgePlusConnectionController
+import com.takipsanplus.rfidtablet.data.network.DeviceConnectionState
 import com.takipsanplus.rfidtablet.data.local.UserPreferences
 import com.takipsanplus.rfidtablet.data.model.ShipmentPackageUi
 import com.takipsanplus.rfidtablet.data.model.ShipmentSummaryUi
@@ -72,7 +72,7 @@ class ShipmentViewModel(
 
     init {
         viewModelScope.launch {
-            BluetoothConnectionController.epcEvents.collect { epc ->
+            BridgePlusConnectionController.epcEvents.collect { epc ->
                 if (!_state.value.isScanning) return@collect
                 val sid = _state.value.selectedShipmentId ?: return@collect
                 val key = normalizeEpcKey(epc)
@@ -89,16 +89,19 @@ class ShipmentViewModel(
                     set
                 }
                 if (key in blocked) return@collect
+                var newEpc = false
                 val count = synchronized(windowBuffer) {
-                    windowBuffer.add(key)
+                    newEpc = windowBuffer.add(key)   // false → already in buffer this window
                     windowBuffer.size
                 }
                 _state.update { it.copy(currentBatchEpcCount = count) }
-                schedulePacketIdleFlush()
+                // Idle timer'ı yalnızca gerçekten yeni bir EPC geldiğinde başlat/sıfırla.
+                // Aynı tag sürekli geliyorsa (cihaz stream davranışı) timer sıfırlanmamalı.
+                if (newEpc) schedulePacketIdleFlush()
             }
         }
         viewModelScope.launch {
-            BluetoothConnectionController.barcodeEvents.collect { raw ->
+            BridgePlusConnectionController.barcodeEvents.collect { raw ->
                 if (!readerSettings().barcodeEnabled) return@collect
                 if (_state.value.isScanning) return@collect
                 if (_state.value.selectedShipmentId == null) return@collect
@@ -316,7 +319,7 @@ class ShipmentViewModel(
     }
 
     fun startFindPackageLookup() {
-        if (BluetoothConnectionController.state.value !is BluetoothConnectionState.Connected) return
+        if (BridgePlusConnectionController.state.value !is DeviceConnectionState.Connected) return
         val sid = _state.value.selectedShipmentId ?: return
         val summary = shipmentStore[sid] ?: return
         if (summary.consignmentRemoteId <= 0) return
@@ -333,12 +336,10 @@ class ShipmentViewModel(
     private fun startFindPackageLookupInternal() {
         val sid = _state.value.selectedShipmentId ?: return
         shipmentStore[sid] ?: return
-        val ws = readerSettings()
-        val weightFlag = if (ws.weightEnabled) "1" else "0"
         packetIdleJob?.cancel()
         packetIdleJob = null
         synchronized(windowBuffer) { windowBuffer.clear() }
-        BluetoothConnectionController.sendCommand("""{"Status":["Start","$weightFlag"]}""")
+        BridgePlusConnectionController.startScan()
         _state.update {
             it.copy(
                 isScanning = true,
@@ -846,7 +847,7 @@ class ShipmentViewModel(
             stopScanningInternal(sendStopCommand = true)
             return
         }
-        if (BluetoothConnectionController.state.value !is BluetoothConnectionState.Connected) return
+        if (BridgePlusConnectionController.state.value !is DeviceConnectionState.Connected) return
         val sid = _state.value.selectedShipmentId ?: return
         shipmentStore[sid] ?: return
         val ws = readerSettings()
@@ -901,13 +902,12 @@ class ShipmentViewModel(
 
     private fun startEpcScanning() {
         if (_state.value.isScanning && !_state.value.isFindPackageLookupActive) return
-        if (BluetoothConnectionController.state.value !is BluetoothConnectionState.Connected) return
+        if (BridgePlusConnectionController.state.value !is DeviceConnectionState.Connected) return
         val sid = _state.value.selectedShipmentId ?: return
         shipmentStore[sid] ?: return
 
         val ws = readerSettings()
         val seconds = ws.packetCloseTimeout.coerceIn(1, 10)
-        val weightFlag = if (ws.weightEnabled) "1" else "0"
 
         packetIdleJob?.cancel()
         packetIdleJob = null
@@ -917,7 +917,7 @@ class ShipmentViewModel(
 
         val wasFind = _state.value.isFindPackageLookupActive
         if (!wasFind) {
-            BluetoothConnectionController.sendCommand("""{"Status":["Start","$weightFlag"]}""")
+            BridgePlusConnectionController.startScan()
         }
         _state.update {
             it.copy(
@@ -986,46 +986,49 @@ class ShipmentViewModel(
             }
 
             _state.update { it.copy(isSubmittingBatch = true) }
-            val nextPackageNo = nextPackageNumberForShipment(currentSid)
-            val body = PackageZaraRequestModel(
-                dataList = PackageZaraDataList(
-                    box_type_id = 1,
-                    consignmentId = summary.consignmentRemoteId,
-                    device_id = companyId,
-                    load_type = "RFID",
-                    // Sunucu boş stringi "gönderilmedi" sayıyor (empty()).
-                    model = "-",
-                    orderId = summary.orderRemoteId,
-                    packageId = nextPackageNo,
-                    size = "-",
-                    dataList = newOnly.map { PackageEpcData(epc = it) },
-                    barcode = sessionBarcodeForPackages,
-                    weight = "0"
+            try {
+                val nextPackageNo = nextPackageNumberForShipment(currentSid)
+                val body = PackageZaraRequestModel(
+                    dataList = PackageZaraDataList(
+                        box_type_id = 1,
+                        consignmentId = summary.consignmentRemoteId,
+                        device_id = companyId,
+                        load_type = "RFID",
+                        // Sunucu boş stringi "gönderilmedi" sayıyor (empty()).
+                        model = "-",
+                        orderId = summary.orderRemoteId,
+                        packageId = nextPackageNo,
+                        size = "-",
+                        dataList = newOnly.map { PackageEpcData(epc = it) },
+                        barcode = sessionBarcodeForPackages,
+                        weight = "0"
+                    )
                 )
-            )
-            packagesRepository.addPackageZaraStore(token, companyId, body)
-                .onSuccess { outcome ->
-                    synchronized(epcRegistryLock) {
-                        committedEpcKeysByShipment.getOrPut(currentSid) { mutableSetOf() }.addAll(newOnly)
-                    }
-                    loadPackages(currentSid)
-                    interruptEpcScanForBarcodeCycleIfNeeded()
-                    when (outcome) {
-                        AddPackageZaraResult.Ok -> {}
-                        is AddPackageZaraResult.OkWithServerMessage -> {
-                            _state.update { it.copy(addPackageWarningMessage = outcome.message) }
+                packagesRepository.addPackageZaraStore(token, companyId, body)
+                    .onSuccess { outcome ->
+                        synchronized(epcRegistryLock) {
+                            committedEpcKeysByShipment.getOrPut(currentSid) { mutableSetOf() }.addAll(newOnly)
+                        }
+                        loadPackages(currentSid)
+                        interruptEpcScanForBarcodeCycleIfNeeded()
+                        when (outcome) {
+                            AddPackageZaraResult.Ok -> {}
+                            is AddPackageZaraResult.OkWithServerMessage -> {
+                                _state.update { it.copy(addPackageWarningMessage = outcome.message) }
+                            }
                         }
                     }
-                }
-                .onFailure { e ->
-                    _state.update {
-                        it.copy(
-                            addPackageWarningMessage = e.message?.takeIf { m -> m.isNotBlank() }
-                                ?: "Add package failed"
-                        )
+                    .onFailure { e ->
+                        _state.update {
+                            it.copy(
+                                addPackageWarningMessage = e.message?.takeIf { m -> m.isNotBlank() }
+                                    ?: "Add package failed"
+                            )
+                        }
                     }
-                }
-            _state.update { it.copy(isSubmittingBatch = false) }
+            } finally {
+                _state.update { it.copy(isSubmittingBatch = false) }
+            }
         }
     }
 
@@ -1034,7 +1037,7 @@ class ShipmentViewModel(
         packetIdleJob = null
         synchronized(windowBuffer) { windowBuffer.clear() }
         if (sendStopCommand) {
-            BluetoothConnectionController.sendCommand("""{"Status":["Stop"]}""")
+            BridgePlusConnectionController.stopScan()
         }
         sessionBarcodeForPackages = ""
         _state.update {

@@ -51,7 +51,7 @@ import com.takipsanplus.rfidtablet.presentation.common.PremiumScreenBackdrop
 import com.takipsanplus.rfidtablet.presentation.common.localizedString
 import com.takipsanplus.rfidtablet.presentation.theme.PrimaryBlue
 
-private val DeviceBg = Color(0xFFF3F4F9)
+private val DeviceBg   = Color(0xFFF3F4F9)
 private val DeviceDark = Color(0xFF000842)
 private val DeviceBlue = Color(0xFF2B7CB0)
 
@@ -72,11 +72,7 @@ fun DeviceSelectionScreen(
     val selectedDevice = boxDevices.firstOrNull { it.id == uiState.selectedDeviceId }
     val isWide = LocalConfiguration.current.smallestScreenWidthDp >= 600
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        // Backdrop (Gradient)
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         PremiumScreenBackdrop()
 
         Image(
@@ -84,7 +80,7 @@ fun DeviceSelectionScreen(
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             alignment = BiasAlignment(
-                horizontalBias = if (isWide) -0.8f else -0.5f, 
+                horizontalBias = if (isWide) -0.8f else -0.5f,
                 verticalBias = 0f
             ),
             contentScale = ContentScale.Crop,
@@ -131,18 +127,14 @@ fun DeviceSelectionScreen(
 
                 if (uiState.isLoading) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
+                        modifier = Modifier.fillMaxWidth().height(100.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = PrimaryBlue)
                     }
                 } else if (boxDevices.isEmpty()) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
+                        modifier = Modifier.fillMaxWidth().height(100.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -167,7 +159,9 @@ fun DeviceSelectionScreen(
                             readOnly = true,
                             enabled = false,
                             singleLine = true,
-                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = if (isWide) 18.sp else 16.sp),
+                            textStyle = androidx.compose.ui.text.TextStyle(
+                                fontSize = if (isWide) 18.sp else 16.sp
+                            ),
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                             },
@@ -193,11 +187,11 @@ fun DeviceSelectionScreen(
                         ) {
                             boxDevices.forEach { device ->
                                 DropdownMenuItem(
-                                    text = { 
+                                    text = {
                                         Text(
                                             text = "${device.name} (${device.ipAddress})",
                                             fontSize = if (isWide) 18.sp else 16.sp
-                                        ) 
+                                        )
                                     },
                                     onClick = {
                                         onDeviceSelected(device.id)

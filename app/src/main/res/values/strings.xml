@@ -48,6 +48,14 @@
     <string name="stop_action">Stop</string>
     <string name="clear_action">Clear</string>
     <string name="settings_title">Settings</string>
+    <string name="connection_title">Device Connection</string>
+    <string name="connection_mode_websocket">WebSocket</string>
+    <string name="connection_mode_ble">Bluetooth LE</string>
+    <string name="device_ip_label">IP Address</string>
+    <string name="ble_scan">Scan for Devices</string>
+    <string name="ble_preparing">Switching device to BLE mode…</string>
+    <string name="ble_scanning">Scanning…</string>
+    <string name="ble_no_devices">No BLE devices found. Tap Scan to search.</string>
     <string name="bluetooth_connection_title">Bluetooth Connection</string>
     <string name="bluetooth_no_bonded_devices">No paired Bluetooth devices found.</string>
     <string name="bluetooth_select_device">Select device</string>

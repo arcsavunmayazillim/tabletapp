@@ -23,15 +23,16 @@ class DeviceSelectionViewModel(
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val getDeviceListUseCase: GetDeviceListUseCase
 ) : ViewModel() {
-    private fun isBoxDeviceType(deviceType: String): Boolean {
-        return deviceType.contains("box", ignoreCase = true)
-    }
+
+    private fun isBoxDeviceType(deviceType: String) =
+        deviceType.contains("box", ignoreCase = true)
 
     private val _uiState = MutableStateFlow(DeviceSelectionUiState())
     val uiState: StateFlow<DeviceSelectionUiState> = _uiState.asStateFlow()
 
     private val _messages = MutableSharedFlow<UiMessage>()
     val messages: SharedFlow<UiMessage> = _messages.asSharedFlow()
+
     private val _events = MutableSharedFlow<DeviceSelectionEvent>()
     val events: SharedFlow<DeviceSelectionEvent> = _events.asSharedFlow()
 
@@ -45,20 +46,17 @@ class DeviceSelectionViewModel(
 
             getUserInfoUseCase(token)
                 .onFailure {
-                    _uiState.update { state -> state.copy(isLoading = false) }
+                    _uiState.update { s -> s.copy(isLoading = false) }
                     _messages.emit(
-                        if (it.message.isNullOrBlank()) {
-                            UiMessage.Resource(R.string.error_user_info_load)
-                        } else {
-                            UiMessage.Text(it.message!!)
-                        }
+                        if (it.message.isNullOrBlank()) UiMessage.Resource(R.string.error_user_info_load)
+                        else UiMessage.Text(it.message!!)
                     )
                     return@launch
                 }
                 .onSuccess { userInfo ->
                     val companyId = userInfo.data?.companyId
                     if (companyId == null) {
-                        _uiState.update { state -> state.copy(isLoading = false) }
+                        _uiState.update { s -> s.copy(isLoading = false) }
                         _messages.emit(UiMessage.Resource(R.string.error_company_not_found))
                         return@launch
                     }
@@ -67,23 +65,20 @@ class DeviceSelectionViewModel(
 
                     getDeviceListUseCase(token, companyId)
                         .onFailure {
-                            _uiState.update { state -> state.copy(isLoading = false) }
+                            _uiState.update { s -> s.copy(isLoading = false) }
                             _messages.emit(
-                                if (it.message.isNullOrBlank()) {
-                                    UiMessage.Resource(R.string.error_device_list_load)
-                                } else {
-                                    UiMessage.Text(it.message!!)
-                                }
+                                if (it.message.isNullOrBlank()) UiMessage.Resource(R.string.error_device_list_load)
+                                else UiMessage.Text(it.message!!)
                             )
                         }
                         .onSuccess { devices ->
-                            val defaultSelected = devices.firstOrNull { isBoxDeviceType(it.deviceType) }
+                            val default = devices.firstOrNull { d -> isBoxDeviceType(d.deviceType) }
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
                                     devices = devices,
-                                    selectedDeviceId = defaultSelected?.id,
-                                    selectedDeviceName = defaultSelected?.name.orEmpty()
+                                    selectedDeviceId = default?.id,
+                                    selectedDeviceName = default?.name.orEmpty()
                                 )
                             }
                         }
@@ -93,18 +88,17 @@ class DeviceSelectionViewModel(
 
     fun onDeviceSelected(deviceId: Int) {
         val picked = _uiState.value.devices.firstOrNull { it.id == deviceId } ?: return
-        _uiState.update {
-            it.copy(selectedDeviceId = deviceId, selectedDeviceName = picked.name)
-        }
+        _uiState.update { it.copy(selectedDeviceId = deviceId, selectedDeviceName = picked.name) }
     }
 
     fun onContinueClicked() {
         viewModelScope.launch {
-            val selectedName = _uiState.value.selectedDeviceName
-            if (selectedName.isBlank()) {
+            val state = _uiState.value
+            val selectedDevice = state.devices.firstOrNull { it.id == state.selectedDeviceId }
+            if (selectedDevice == null || selectedDevice.name.isBlank()) {
                 _messages.emit(UiMessage.Resource(R.string.error_select_device))
             } else {
-                _events.emit(DeviceSelectionEvent.NavigateHome(selectedName))
+                _events.emit(DeviceSelectionEvent.NavigateHome(selectedDevice.name))
             }
         }
     }
@@ -116,8 +110,7 @@ class DeviceSelectionViewModel(
         private val getDeviceListUseCase: GetDeviceListUseCase
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return DeviceSelectionViewModel(token, userPreferences, getUserInfoUseCase, getDeviceListUseCase) as T
-        }
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            DeviceSelectionViewModel(token, userPreferences, getUserInfoUseCase, getDeviceListUseCase) as T
     }
 }

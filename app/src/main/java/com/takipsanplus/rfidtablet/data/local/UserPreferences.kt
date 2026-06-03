@@ -90,6 +90,16 @@ class UserPreferences(context: Context) {
         return prefs.getString(KEY_BT_ADDRESS, null)
     }
 
+    fun saveSelectedDeviceIp(ip: String) {
+        prefs.edit().putString(KEY_DEVICE_IP, ip).apply()
+    }
+
+    fun getSelectedDeviceIp(): String? {
+        val raw = prefs.getString(KEY_DEVICE_IP, null)?.takeIf { it.isNotBlank() } ?: return null
+        // Seri port yollarını (dev/ttyUSB0 gibi) filtrele — bunlar ağ IP'si değil
+        return if (raw.contains('.') && !raw.startsWith("/") && !raw.startsWith("dev")) raw else null
+    }
+
     /** Session after login + device selection (used for API calls such as consignments). */
     fun saveSession(token: String, companyId: Int) {
         prefs.edit()
@@ -127,6 +137,7 @@ class UserPreferences(context: Context) {
         const val KEY_LANGUAGE_CODE = "language_code"
 
         const val KEY_BT_ADDRESS = "bt_address"
+        const val KEY_DEVICE_IP = "device_ip"
 
         const val KEY_ANT1 = "ant1"
         const val KEY_ANT2 = "ant2"

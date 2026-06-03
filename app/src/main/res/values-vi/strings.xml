@@ -47,6 +47,14 @@
     <string name="stop_action">Dung</string>
     <string name="clear_action">Xoa</string>
     <string name="settings_title">Cai dat</string>
+    <string name="connection_title">Ket noi thiet bi</string>
+    <string name="connection_mode_websocket">WebSocket</string>
+    <string name="connection_mode_ble">Bluetooth LE</string>
+    <string name="device_ip_label">Dia chi IP</string>
+    <string name="ble_scan">Tim kiem thiet bi</string>
+    <string name="ble_preparing">Chuyen sang che do BLE…</string>
+    <string name="ble_scanning">Dang tim kiem…</string>
+    <string name="ble_no_devices">Khong tim thay thiet bi BLE. Nhan Tim kiem.</string>
     <string name="bluetooth_connection_title">Ket noi Bluetooth</string>
     <string name="bluetooth_no_bonded_devices">Khong co thiet bi Bluetooth da ghép noi.</string>
     <string name="bluetooth_select_device">Chon thiet bi</string>

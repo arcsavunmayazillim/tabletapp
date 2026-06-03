@@ -115,8 +115,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.takipsanplus.rfidtablet.R
-import com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionController
-import com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionState
+import com.takipsanplus.rfidtablet.data.network.BridgePlusConnectionController
+import com.takipsanplus.rfidtablet.data.network.DeviceConnectionState
 import com.takipsanplus.rfidtablet.data.model.consignment.SizeQuantity
 import com.takipsanplus.rfidtablet.data.model.ShipmentPackageUi
 import com.takipsanplus.rfidtablet.data.model.ShipmentSummaryUi
@@ -236,8 +236,8 @@ fun ShipmentScreen(
 
     val canCloseConsignment =
         selected != null && selected.consignmentRemoteId > 0
-    val bluetoothState by BluetoothConnectionController.state.collectAsState()
-    val isBluetoothConnected = bluetoothState is BluetoothConnectionState.Connected
+    val deviceState by BridgePlusConnectionController.state.collectAsState()
+    val isBluetoothConnected = deviceState is DeviceConnectionState.Connected
     val scanStartEnabled =
         !qrScanBusy && uiState.pendingQrRaw == null && isBluetoothConnected
     val canScan = uiState.selectedShipmentId != null

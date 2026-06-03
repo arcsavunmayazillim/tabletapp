@@ -26,7 +26,7 @@ import com.takipsanplus.rfidtablet.presentation.home.HomeScreen
 import com.takipsanplus.rfidtablet.presentation.login.LoginScreen
 import com.takipsanplus.rfidtablet.presentation.login.LoginViewModel
 import com.takipsanplus.rfidtablet.R
-import com.takipsanplus.rfidtablet.data.bluetooth.BluetoothConnectionController
+import com.takipsanplus.rfidtablet.data.network.BridgePlusConnectionController
 import com.takipsanplus.rfidtablet.presentation.settings.SettingsScreen
 import com.takipsanplus.rfidtablet.presentation.counting.CountingScreen
 import com.takipsanplus.rfidtablet.presentation.counting.CountingViewModel
@@ -40,16 +40,15 @@ fun RfidApp() {
     val loginViewModel: LoginViewModel = viewModel(
         factory = LoginViewModel.Factory(
             ServiceLocator.provideLoginUseCase(),
-            ServiceLocator.provideGetUserInfoUseCase(),
             ServiceLocator.provideUserPreferences(context)
         )
     )
     val uiState by loginViewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(uiState.selectedLanguage) {
-        BluetoothConnectionController.init(context)
-        BluetoothConnectionController.messages.collect { message ->
+    // Unit key: dil değişse bile collector yeniden başlamaz, mesaj kaybolmaz
+    LaunchedEffect(Unit) {
+        BridgePlusConnectionController.messages.collect { message ->
             val text = when (message) {
                 is UiMessage.Resource -> localizedString(context, message.resId, uiState.selectedLanguage)
                 is UiMessage.Text -> message.value
@@ -58,7 +57,7 @@ fun RfidApp() {
         }
     }
 
-    LaunchedEffect(loginViewModel, uiState.selectedLanguage) {
+    LaunchedEffect(loginViewModel) {
         loginViewModel.messages.collect { message ->
             val text = when (message) {
                 is UiMessage.Resource -> localizedString(context, message.resId, uiState.selectedLanguage)
@@ -109,7 +108,7 @@ fun RfidApp() {
                 )
                 val deviceUiState by deviceViewModel.uiState.collectAsState()
 
-                LaunchedEffect(deviceViewModel, uiState.selectedLanguage) {
+                LaunchedEffect(deviceViewModel) {
                     deviceViewModel.messages.collect { message ->
                         val text = when (message) {
                             is UiMessage.Resource -> localizedString(context, message.resId, uiState.selectedLanguage)
@@ -124,7 +123,10 @@ fun RfidApp() {
                             is DeviceSelectionEvent.NavigateHome -> {
                                 navController.navigate(
                                     "${NavRoutes.HOME}?device=${Uri.encode(event.selectedDeviceName)}"
-                                )
+                                ) {
+                                    // Lisans ekranı bir kez geçilir; Home'dan back tuşu ile geri açılmamalı
+                                    popUpTo(NavRoutes.DEVICE_SELECTION) { inclusive = true }
+                                }
                             }
                         }
                     }
@@ -152,6 +154,8 @@ fun RfidApp() {
                     selectedDeviceName = selectedDevice,
                     onBack = { navController.popBackStack() },
                     onLogout = {
+                        ServiceLocator.provideUserPreferences(context).clearSession()
+                        BridgePlusConnectionController.disconnect()
                         navController.navigate(NavRoutes.LOGIN) {
                             popUpTo(0) { inclusive = true }
                         }

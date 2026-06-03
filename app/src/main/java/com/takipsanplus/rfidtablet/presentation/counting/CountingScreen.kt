@@ -232,7 +232,10 @@ fun CountingScreen(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                     ) {
                         Text(
-                            text = if (uiState.isReading) "DURDUR" else "BAŞLAT",
+                            text = localizedString(
+                                if (uiState.isReading) R.string.stop_action else R.string.start_action,
+                                language
+                            ).uppercase(),
                             color = Color.White,
                             style = MaterialTheme.typography.titleMedium.copy(letterSpacing = 1.sp)
                         )
